@@ -111,19 +111,20 @@ export default function AdminProductosPage() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between py-4 md:h-16 gap-3">
+            <div className="flex items-center space-x-3 md:space-x-4">
               <Link href="/admin" className="text-gray-600 hover:text-primary-600">
                 <FiArrowLeft className="text-2xl" />
               </Link>
-              <h1 className="text-xl font-bold text-gray-800">Gestión de Productos</h1>
+              <h1 className="text-lg md:text-xl font-bold text-gray-800">Gestión de Productos</h1>
             </div>
             <Link
               href="/admin/productos/nuevo"
-              className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
+              className="flex items-center space-x-2 bg-primary-600 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-primary-700 transition text-sm md:text-base whitespace-nowrap"
             >
               <FiPlus />
-              <span>Nuevo Producto</span>
+              <span className="hidden sm:inline">Nuevo Producto</span>
+              <span className="sm:hidden">Nuevo</span>
             </Link>
           </div>
         </div>
