@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiArrowLeft, FiUpload, FiX, FiSave, FiCamera } from 'react-icons/fi';
+import { FiArrowLeft, FiUpload, FiX, FiSave, FiCamera, FiImage } from 'react-icons/fi';
 
 interface Categoria {
   _id: string;
@@ -239,32 +239,62 @@ export default function ProductoFormPage() {
                 ))}
               </div>
               {formData.imagenes.length < 5 && (
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    onChange={handleImageUpload}
-                    disabled={uploadingImage}
-                    className="hidden"
-                  />
-                  <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-primary-500 transition flex flex-col items-center justify-center">
-                    {uploadingImage ? (
-                      <>
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2"></div>
-                        <span className="text-gray-600">Subiendo imagen...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FiCamera className="text-3xl text-gray-400 mb-2" />
-                        <span className="text-gray-600">Cámara o Galería</span>
-                        <span className="text-sm text-gray-400 mt-1">
-                          {formData.imagenes.length}/5 imágenes
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Botón Cámara */}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                    <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition flex flex-col items-center justify-center min-h-[120px]">
+                      {uploadingImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2"></div>
+                          <span className="text-xs text-gray-600">Subiendo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FiCamera className="text-3xl text-gray-400 mb-2" />
+                          <span className="text-sm font-medium text-gray-700">Cámara</span>
+                          <span className="text-xs text-gray-500 mt-1">
+                            {formData.imagenes.length}/5
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Botón Galería */}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                    <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition flex flex-col items-center justify-center min-h-[120px]">
+                      {uploadingImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2"></div>
+                          <span className="text-xs text-gray-600">Subiendo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FiImage className="text-3xl text-gray-400 mb-2" />
+                          <span className="text-sm font-medium text-gray-700">Galería</span>
+                          <span className="text-xs text-gray-500 mt-1">
+                            {formData.imagenes.length}/5
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </label>
+                </div>
               )}
             </div>
 
