@@ -49,7 +49,7 @@ const UsuarioSchema: Schema = new Schema(
 );
 
 // Hash password antes de guardar
-UsuarioSchema.pre('save', async function (next) {
+UsuarioSchema.pre<IUsuario>('save', async function (next) {
   if (!this.isModified('password')) return next();
   
   try {
