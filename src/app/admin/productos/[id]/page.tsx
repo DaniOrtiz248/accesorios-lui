@@ -120,10 +120,11 @@ export default function ProductoFormPage() {
       console.log('📦 Data:', data);
 
       if (data.success) {
-        console.log('✅ Imagen subida exitosamente:', data.url);
+        const imageUrl = data.data?.url || data.url;
+        console.log('✅ Imagen subida exitosamente:', imageUrl);
         setFormData((prev) => ({
           ...prev,
-          imagenes: [...prev.imagenes, data.url],
+          imagenes: [...prev.imagenes, imageUrl],
         }));
         alert('Imagen subida correctamente');
       } else {
