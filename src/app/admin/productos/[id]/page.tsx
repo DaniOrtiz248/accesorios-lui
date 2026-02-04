@@ -151,9 +151,20 @@ export default function ProductoFormPage() {
     e.preventDefault();
     setLoading(true);
 
+    const dataToSend = {
+      ...formData,
+      precio: parseFloat(formData.precio),
+    };
+
+    console.log('📝 FormData antes de enviar:', formData);
+    console.log('🖼️ Imágenes en formData:', formData.imagenes);
+    console.log('📤 Data a enviar:', dataToSend);
+
     try {
       const url = isEditing ? `/api/productos/${params.id}` : '/api/productos';
       const method = isEditing ? 'PUT' : 'POST';
+
+      console.log('🚀 Enviando', method, 'a', url);
 
       const res = await fetch(url, {
         method,
@@ -161,11 +172,10 @@ export default function ProductoFormPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          precio: parseFloat(formData.precio),
-        }),
+        body: JSON.stringify(dataToSend),
       });
+
+      console.log('📡 Respuesta recibida, status:', res.status);
 
       const data = await res.json();
 
