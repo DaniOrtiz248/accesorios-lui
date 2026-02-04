@@ -39,7 +39,7 @@ const CategoriaSchema: Schema = new Schema(
 );
 
 // Generar slug automáticamente antes de guardar
-CategoriaSchema.pre('save', function (next) {
+CategoriaSchema.pre<ICategoria>('save', function (next) {
   if (!this.slug || this.isModified('nombre')) {
     this.slug = this.nombre
       .toLowerCase()
@@ -52,7 +52,7 @@ CategoriaSchema.pre('save', function (next) {
 });
 
 // También generar slug en create
-CategoriaSchema.pre('validate', function (next) {
+CategoriaSchema.pre<ICategoria>('validate', function (next) {
   if (!this.slug && this.nombre) {
     this.slug = this.nombre
       .toLowerCase()
