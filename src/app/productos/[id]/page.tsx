@@ -61,6 +61,20 @@ export default function ProductoDetallePage() {
   if (loading) return <Loading />;
   if (!producto) return <div className="text-center py-20">Producto no encontrado</div>;
 
+  // Generar mensaje de WhatsApp con información del producto
+  const whatsappMessage = encodeURIComponent(
+    `¡Hola! Me interesa este producto:\n\n` +
+    `*${producto.nombre}*\n\n` +
+    `${producto.descripcion}\n\n` +
+    `💰 Precio: $${producto.precio.toLocaleString('es-CO')} COP\n` +
+    `📦 Material: ${producto.material}\n` +
+    `🏷️ Categoría: ${producto.categoria?.nombre}\n\n` +
+    (producto.imagenes?.[0] ? `🖼️ Imagen: ${producto.imagenes[0]}\n\n` : '') +
+    `¿Está disponible?`
+  );
+
+  const whatsappUrl = `https://wa.me/573104426397?text=${whatsappMessage}`;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -143,26 +157,16 @@ export default function ProductoDetallePage() {
 
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-6">
             <p className="text-center text-gray-700 mb-4">
-              ¿Te interesa este producto? Contáctanos
+              ¿Te interesa este producto? Contáctanos por WhatsApp
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="https://wa.me/573104426397"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-green-600 text-white text-center px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium"
-              >
-                Consultar por WhatsApp
-              </a>
-              <a
-                href="https://www.instagram.com/accesorioslui07/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-pink-600 text-white text-center px-6 py-3 rounded-lg hover:bg-pink-700 transition font-medium"
-              >
-                Ver en Instagram
-              </a>
-            </div>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-green-600 text-white text-center px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium"
+            >
+              Consultar por WhatsApp
+            </a>
           </div>
         </div>
       </div>
