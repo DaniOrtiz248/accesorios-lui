@@ -13,7 +13,7 @@ interface Categoria {
 }
 
 export default function ProductoFormPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const isEditing = !!params.id && params.id !== 'nuevo';
@@ -33,15 +33,15 @@ export default function ProductoFormPage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/admin/login');
-    } else {
+    } else if (!isLoading && isAuthenticated) {
       fetchCategorias();
       if (isEditing) {
         fetchProducto();
       }
     }
-  }, [isAuthenticated, isEditing]);
+  }, [isAuthenticated, isLoading, isEditing]);
 
   const fetchCategorias = async () => {
     try {
