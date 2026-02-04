@@ -67,7 +67,7 @@ export default function ProductosPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-8">Nuestros Productos</h1>
 
-      <Filters onFilterChange={handleFilterChange} />
+      <Filters onFilterChange={handleFilterChange} initialFilters={filters} />
 
       {loading ? (
         <Loading />
