@@ -70,7 +70,6 @@ export default function ProductoDetallePage() {
     `💰 Precio: $${producto.precio.toLocaleString('es-CO')} COP\n` +
     `📦 Material: ${producto.material}\n` +
     `🏷️ Categoría: ${producto.categoria?.nombre}\n\n` +
-    (producto.imagenes?.[0] ? `🖼️ Imagen: ${producto.imagenes[0]}\n\n` : '') +
     `¿Está disponible?`
   );
 
