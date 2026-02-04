@@ -5,8 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiArrowLeft, FiUpload, FiX, FiSave } from 'react-icons/fi';
-import { CldUploadWidget } from 'next-cloudinary';
+import { FiArrowLeft, FiUpload, FiX, FiSave, FiCamera } from 'react-icons/fi';
 
 interface Categoria {
   _id: string;
@@ -80,13 +79,52 @@ export default function ProductoFormPage() {
     }
   };
 
-  const handleImageUpload = (result: any) => {
-    if (result.event === 'success') {
-      const imageUrl = result.info.secure_url;
-      setFormData((prev) => ({
-        ...prev,
-        imagenes: [...prev.imagenes, imageUrl],
-      }));
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamaño (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('La imagen no debe superar 10MB');
+      return;
+    }
+
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      alert('Solo se permiten imágenes');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setFormData((prev) => ({
+          ...prev,
+          imagenes: [...prev.imagenes, data.url],
+        }));
+      } else {
+        alert(data.message || 'Error al subir imagen');
+      }
+    } catch (error) {
+      alert('Error al subir imagen');
+    } finally {
+      setUploadingImage(false);
+      // Reset input
+      e.target.value = '';
     }
   };
 
@@ -178,29 +216,32 @@ export default function ProductoFormPage() {
                 ))}
               </div>
               {formData.imagenes.length < 5 && (
-                <CldUploadWidget
-                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'accesorios-lui'}
-                  onSuccess={handleImageUpload}
-                  options={{
-                    maxFiles: 1,
-                    folder: 'productos',
-                    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-                  }}
-                >
-                  {({ open }) => (
-                    <button
-                      type="button"
-                      onClick={() => open?.()}
-                      className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-primary-500 transition flex flex-col items-center justify-center"
-                    >
-                      <FiUpload className="text-3xl text-gray-400 mb-2" />
-                      <span className="text-gray-600">Subir imagen</span>
-                      <span className="text-sm text-gray-400 mt-1">
-                        {formData.imagenes.length}/5 imágenes
-                      </span>
-                    </button>
-                  )}
-                </CldUploadWidget>
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                  />
+                  <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-primary-500 transition flex flex-col items-center justify-center">
+                    {uploadingImage ? (
+                      <>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2"></div>
+                        <span className="text-gray-600">Subiendo imagen...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FiCamera className="text-3xl text-gray-400 mb-2" />
+                        <span className="text-gray-600">Tomar foto o seleccionar imagen</span>
+                        <span className="text-sm text-gray-400 mt-1">
+                          {formData.imagenes.length}/5 imágenes
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </label>
               )}
             </div>
 
