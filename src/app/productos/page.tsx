@@ -113,7 +113,7 @@ function ProductosContent() {
 
 export default function ProductosPage() {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<div className="container mx-auto px-4 py-8"><Loading /></div>}>
       <ProductosContent />
     </Suspense>
   );
