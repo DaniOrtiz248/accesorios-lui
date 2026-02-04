@@ -22,23 +22,19 @@ function ProductosContent() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<any>({});
-  const [initialLoad, setInitialLoad] = useState(false);
 
-  // Leer categoría de la URL al cargar (solo una vez)
+  // Leer categoría de la URL al cargar
   useEffect(() => {
     const categoriaFromUrl = searchParams.get('categoria');
     if (categoriaFromUrl) {
       setFilters({ categoria: categoriaFromUrl });
     }
-    setInitialLoad(true);
-  }, []);
+  }, [searchParams]);
 
-  // Fetch productos cuando cambien page, filters o después del initialLoad
+  // Fetch productos cuando cambien page o filters
   useEffect(() => {
-    if (initialLoad) {
-      fetchProductos();
-    }
-  }, [page, filters, initialLoad]);
+    fetchProductos();
+  }, [page, filters]);
 
   const fetchProductos = async () => {
     setLoading(true);
@@ -50,14 +46,23 @@ function ProductosContent() {
       });
 
       const res = await fetch(`/api/productos?${params}`);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
 
-      if (data.success) {
-        setProductos(data.data.productos);
-        setTotalPages(data.data.pagination.pages);
+      if (data.success && data.data) {
+        setProductos(data.data.productos || []);
+        setTotalPages(data.data.pagination?.pages || 1);
+      } else {
+        console.error('Respuesta sin datos:', data);
+        setProductos([]);
       }
     } catch (error) {
       console.error('Error al cargar productos:', error);
+      setProductos([]);
     } finally {
       setLoading(false);
     }
