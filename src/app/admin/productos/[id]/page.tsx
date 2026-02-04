@@ -83,6 +83,8 @@ export default function ProductoFormPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log('📸 Archivo seleccionado:', file.name, file.type, file.size);
+
     // Validar tamaño (máximo 10MB)
     if (file.size > 10 * 1024 * 1024) {
       alert('La imagen no debe superar 10MB');
@@ -96,10 +98,13 @@ export default function ProductoFormPage() {
     }
 
     setUploadingImage(true);
+    console.log('⏳ Iniciando upload...');
 
     try {
       const formData = new FormData();
       formData.append('file', file);
+
+      console.log('🚀 Enviando a /api/upload...');
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -109,18 +114,25 @@ export default function ProductoFormPage() {
         body: formData,
       });
 
+      console.log('📡 Respuesta recibida, status:', res.status);
+
       const data = await res.json();
+      console.log('📦 Data:', data);
 
       if (data.success) {
+        console.log('✅ Imagen subida exitosamente:', data.url);
         setFormData((prev) => ({
           ...prev,
           imagenes: [...prev.imagenes, data.url],
         }));
+        alert('Imagen subida correctamente');
       } else {
+        console.error('❌ Error del servidor:', data.message);
         alert(data.message || 'Error al subir imagen');
       }
     } catch (error) {
-      alert('Error al subir imagen');
+      console.error('❌ Error de red:', error);
+      alert('Error al subir imagen: ' + error);
     } finally {
       setUploadingImage(false);
       // Reset input
