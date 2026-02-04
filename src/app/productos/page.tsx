@@ -22,18 +22,23 @@ function ProductosContent() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<any>({});
+  const [initialLoad, setInitialLoad] = useState(false);
 
-  // Leer categoría de la URL al cargar
+  // Leer categoría de la URL al cargar (solo una vez)
   useEffect(() => {
     const categoriaFromUrl = searchParams.get('categoria');
     if (categoriaFromUrl) {
       setFilters({ categoria: categoriaFromUrl });
     }
-  }, [searchParams]);
+    setInitialLoad(true);
+  }, []);
 
+  // Fetch productos cuando cambien page, filters o después del initialLoad
   useEffect(() => {
-    fetchProductos();
-  }, [page, filters]);
+    if (initialLoad) {
+      fetchProductos();
+    }
+  }, [page, filters, initialLoad]);
 
   const fetchProductos = async () => {
     setLoading(true);
