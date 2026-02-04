@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Filters from '@/components/Filters';
@@ -15,7 +15,7 @@ interface Producto {
   material: string;
 }
 
-export default function ProductosPage() {
+function ProductosContent() {
   const searchParams = useSearchParams();
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,5 +108,13 @@ export default function ProductosPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function ProductosPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ProductosContent />
+    </Suspense>
   );
 }
