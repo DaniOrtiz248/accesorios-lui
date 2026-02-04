@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Filters from '@/components/Filters';
 import Loading from '@/components/Loading';
@@ -15,11 +16,20 @@ interface Producto {
 }
 
 export default function ProductosPage() {
+  const searchParams = useSearchParams();
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<any>({});
+
+  // Leer categoría de la URL al cargar
+  useEffect(() => {
+    const categoriaFromUrl = searchParams.get('categoria');
+    if (categoriaFromUrl) {
+      setFilters({ categoria: categoriaFromUrl });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchProductos();
