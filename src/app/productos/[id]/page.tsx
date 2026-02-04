@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Loading from '@/components/Loading';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiX, FiZoomIn } from 'react-icons/fi';
 
 interface Producto {
   _id: string;
@@ -23,6 +23,7 @@ export default function ProductoDetallePage() {
   const [producto, setProducto] = useState<Producto | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -80,28 +81,42 @@ export default function ProductoDetallePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Galería de Imágenes */}
         <div>
-          <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4" style={{ aspectRatio: '1' }}>
+          <div 
+            className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 cursor-zoom-in group" 
+            style={{ aspectRatio: '1' }}
+            onClick={() => setIsImageModalOpen(true)}
+          >
             {producto.imagenes && producto.imagenes.length > 0 ? (
               <>
                 <Image
                   src={producto.imagenes[currentImageIndex]}
                   alt={producto.nombre}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform group-hover:scale-105"
                   priority
                 />
+                {/* Icono de zoom */}
+                <div className="absolute top-4 right-4 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <FiZoomIn className="text-xl text-gray-700" />
+                </div>
                 {producto.imagenes.length > 1 && (
                   <>
                     <button
-                      onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full z-10"
                       aria-label="Imagen anterior"
                     >
                       <FiChevronLeft className="text-2xl" />
                     </button>
                     <button
-                      onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full z-10"
                       aria-label="Siguiente imagen"
                     >
                       <FiChevronRight className="text-2xl" />
@@ -170,6 +185,70 @@ export default function ProductoDetallePage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de imagen ampliada */}
+      {isImageModalOpen && producto.imagenes && producto.imagenes.length > 0 && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          {/* Botón cerrar */}
+          <button
+            onClick={() => setIsImageModalOpen(false)}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition z-10"
+            aria-label="Cerrar"
+          >
+            <FiX className="text-3xl" />
+          </button>
+
+          {/* Navegación */}
+          {producto.imagenes.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition z-10"
+                aria-label="Imagen anterior"
+              >
+                <FiChevronLeft className="text-3xl" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition z-10"
+                aria-label="Siguiente imagen"
+              >
+                <FiChevronRight className="text-3xl" />
+              </button>
+            </>
+          )}
+
+          {/* Imagen ampliada */}
+          <div 
+            className="relative w-full h-full max-w-6xl max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={producto.imagenes[currentImageIndex]}
+              alt={producto.nombre}
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Contador de imágenes */}
+          {producto.imagenes.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+              {currentImageIndex + 1} / {producto.imagenes.length}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
