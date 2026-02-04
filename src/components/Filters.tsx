@@ -11,9 +11,10 @@ interface Categoria {
 
 interface FiltersProps {
   onFilterChange: (filters: any) => void;
+  initialFilters?: any;
 }
 
-export default function Filters({ onFilterChange }: FiltersProps) {
+export default function Filters({ onFilterChange, initialFilters = {} }: FiltersProps) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [categoria, setCategoria] = useState('');
@@ -23,6 +24,13 @@ export default function Filters({ onFilterChange }: FiltersProps) {
   useEffect(() => {
     fetchCategorias();
   }, []);
+
+  // Aplicar filtros iniciales cuando cambian
+  useEffect(() => {
+    if (initialFilters.categoria) {
+      setCategoria(initialFilters.categoria);
+    }
+  }, [initialFilters]);
 
   const fetchCategorias = async () => {
     try {
