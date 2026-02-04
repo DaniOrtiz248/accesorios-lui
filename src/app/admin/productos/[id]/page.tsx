@@ -138,11 +138,11 @@ export default function ProductoFormPage() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex items-center space-x-4 h-16">
+          <div className="flex items-center space-x-3 md:space-x-4 py-4 md:h-16">
             <Link href="/admin/productos" className="text-gray-600 hover:text-primary-600">
               <FiArrowLeft className="text-2xl" />
             </Link>
-            <h1 className="text-xl font-bold text-gray-800">
+            <h1 className="text-lg md:text-xl font-bold text-gray-800">
               {isEditing ? 'Editar Producto' : 'Nuevo Producto'}
             </h1>
           </div>
