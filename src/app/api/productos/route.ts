@@ -12,7 +12,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Construir filtros
-    const filtros: any = { activo: true };
+    const filtros: any = {};
+    
+    // Solo filtrar por activo si no se solicita incluir inactivos (para admin)
+    const includeInactive = searchParams.get('includeInactive');
+    if (!includeInactive) {
+      filtros.activo = true;
+    }
     
     const categoria = searchParams.get('categoria');
     const material = searchParams.get('material');

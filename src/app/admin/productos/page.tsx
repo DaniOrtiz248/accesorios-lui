@@ -44,7 +44,7 @@ export default function AdminProductosPage() {
 
   const fetchProductos = async () => {
     try {
-      const res = await fetch('/api/productos?limit=100');
+      const res = await fetch('/api/productos?limit=100&includeInactive=true');
       const data = await res.json();
       if (data.success) {
         setProductos(data.data.productos);
