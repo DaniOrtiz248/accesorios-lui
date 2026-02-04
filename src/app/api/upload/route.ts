@@ -7,14 +7,19 @@ export async function POST(request: NextRequest) {
   try {
     verifyAuth(request);
     
-    const formData = await request.json();
-    const { file, folder } = formData;
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
     
     if (!file) {
       return errorResponse('No se proporcionó ninguna imagen', 400);
     }
+
+    // Convertir File a base64 para Cloudinary
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
     
-    const imageUrl = await uploadImage(file, folder || 'accesorios-lui');
+    const imageUrl = await uploadImage(base64, 'productos');
     
     return successResponse({ url: imageUrl }, 'Imagen subida exitosamente');
   } catch (error: any) {
