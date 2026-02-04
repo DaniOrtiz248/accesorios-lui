@@ -220,7 +220,6 @@ export default function ProductoFormPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    capture="environment"
                     onChange={handleImageUpload}
                     disabled={uploadingImage}
                     className="hidden"
