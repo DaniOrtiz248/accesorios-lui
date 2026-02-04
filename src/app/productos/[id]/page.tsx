@@ -62,6 +62,12 @@ export default function ProductoDetallePage() {
   if (loading) return <Loading />;
   if (!producto) return <div className="text-center py-20">Producto no encontrado</div>;
 
+  // Filtrar imágenes válidas (no vacías, no null, no undefined)
+  const imagenesValidas = producto.imagenes?.filter(img => img && img.trim() !== '') || [];
+  
+  // Asegurar que el índice actual sea válido
+  const currentIndex = Math.min(currentImageIndex, Math.max(0, imagenesValidas.length - 1));
+
   // Generar mensaje de WhatsApp con información del producto
   const whatsappMessage = encodeURIComponent(
     `¡Hola! Me interesa este producto:\n\n` +
@@ -83,12 +89,12 @@ export default function ProductoDetallePage() {
           <div 
             className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 cursor-zoom-in group" 
             style={{ aspectRatio: '1' }}
-            onClick={() => setIsImageModalOpen(true)}
+            onClick={() => imagenesValidas.length > 0 && setIsImageModalOpen(true)}
           >
-            {producto.imagenes && producto.imagenes.length > 0 ? (
+            {imagenesValidas.length > 0 ? (
               <>
                 <Image
-                  src={producto.imagenes[currentImageIndex]}
+                  src={imagenesValidas[currentIndex]}
                   alt={producto.nombre}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
@@ -98,7 +104,7 @@ export default function ProductoDetallePage() {
                 <div className="absolute top-4 right-4 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <FiZoomIn className="text-xl text-gray-700" />
                 </div>
-                {producto.imagenes.length > 1 && (
+                {imagenesValidas.length > 1 && (
                   <>
                     <button
                       onClick={(e) => {
@@ -131,9 +137,9 @@ export default function ProductoDetallePage() {
           </div>
 
           {/* Miniaturas */}
-          {producto.imagenes && producto.imagenes.length > 1 && (
+          {imagenesValidas.length > 1 && (
             <div className="grid grid-cols-5 gap-2">
-              {producto.imagenes.map((img, index) => (
+              {imagenesValidas.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
@@ -201,7 +207,7 @@ export default function ProductoDetallePage() {
           </button>
 
           {/* Navegación */}
-          {producto.imagenes.length > 1 && (
+          {imagenesValidas.length > 1 && (
             <>
               <button
                 onClick={(e) => {
@@ -232,7 +238,7 @@ export default function ProductoDetallePage() {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={producto.imagenes[currentImageIndex]}
+              src={imagenesValidas[currentIndex]}
               alt={producto.nombre}
               fill
               className="object-contain"
@@ -241,9 +247,9 @@ export default function ProductoDetallePage() {
           </div>
 
           {/* Contador de imágenes */}
-          {producto.imagenes.length > 1 && (
+          {imagenesValidas.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-              {currentImageIndex + 1} / {producto.imagenes.length}
+              {currentIndex + 1} / {imagenesValidas.length}
             </div>
           )}
         </div>
