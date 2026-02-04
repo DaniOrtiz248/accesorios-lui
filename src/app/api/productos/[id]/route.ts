@@ -37,6 +37,11 @@ export async function PUT(
     
     const body = await request.json();
     
+    // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
+    if (body.imagenes && Array.isArray(body.imagenes)) {
+      body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
+    }
+    
     const producto = await Producto.findByIdAndUpdate(
       params.id,
       body,

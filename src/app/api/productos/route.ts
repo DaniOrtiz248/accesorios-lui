@@ -77,6 +77,12 @@ export async function POST(request: NextRequest) {
     await connectDB();
     
     const body = await request.json();
+    
+    // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
+    if (body.imagenes && Array.isArray(body.imagenes)) {
+      body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
+    }
+    
     const producto = await Producto.create(body);
     
     return successResponse(producto, 'Producto creado exitosamente');
