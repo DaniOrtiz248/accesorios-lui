@@ -28,19 +28,19 @@ interface Producto {
 }
 
 export default function AdminProductosPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/admin/login');
-    } else {
+    } else if (!isLoading && isAuthenticated) {
       fetchProductos();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading]);
 
   const fetchProductos = async () => {
     try {
@@ -103,6 +103,17 @@ export default function AdminProductosPage() {
   const productosFiltrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) return null;
 

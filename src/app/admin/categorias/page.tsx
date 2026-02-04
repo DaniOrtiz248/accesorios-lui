@@ -15,7 +15,7 @@ interface Categoria {
 }
 
 export default function AdminCategoriasPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,12 +27,12 @@ export default function AdminCategoriasPage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/admin/login');
-    } else {
+    } else if (!isLoading && isAuthenticated) {
       fetchCategorias();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading]);
 
   const fetchCategorias = async () => {
     try {
