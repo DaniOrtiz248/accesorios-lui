@@ -154,96 +154,79 @@ export default function AdminProductosPage() {
             <p className="text-xl text-gray-600">No hay productos</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Imagen
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Nombre
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Precio (COP)
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Categoría
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {productosFiltrados.map((producto) => (
-                    <tr key={producto._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="relative w-16 h-16 bg-gray-100 rounded">
-                          {producto.imagenes?.[0] ? (
-                            <Image
-                              src={producto.imagenes[0]}
-                              alt={producto.nombre}
-                              fill
-                              className="object-cover rounded"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full text-gray-400 text-xs">
-                              Sin imagen
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {producto.nombre}
-                        </div>
-                        <div className="text-sm text-gray-500">{producto.material}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        ${producto.precio.toLocaleString('es-CO')}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {producto.categoria?.nombre}
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => toggleActivo(producto._id, producto.activo)}
-                          className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${
-                            producto.activo
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {producto.activo ? <FiEye /> : <FiEyeOff />}
-                          <span>{producto.activo ? 'Activo' : 'Inactivo'}</span>
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <Link
-                          href={`/admin/productos/${producto._id}`}
-                          className="inline-block text-blue-600 hover:text-blue-800"
-                          title="Editar"
-                        >
-                          <FiEdit className="text-xl" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(producto._id)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Eliminar"
-                        >
-                          <FiTrash2 className="text-xl" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {productosFiltrados.map((producto) => (
+              <div
+                key={producto._id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+              >
+                {/* Imagen */}
+                <div className="relative aspect-square bg-gray-100">
+                  {producto.imagenes?.[0] ? (
+                    <Image
+                      src={producto.imagenes[0]}
+                      alt={producto.nombre}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      Sin imagen
+                    </div>
+                  )}
+                </div>
+
+                {/* Contenido */}
+                <div className="p-4 space-y-3">
+                  {/* Nombre y Material */}
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-lg line-clamp-1">
+                      {producto.nombre}
+                    </h3>
+                    <p className="text-sm text-gray-500">{producto.material}</p>
+                  </div>
+
+                  {/* Precio y Categoría */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-lg font-bold text-primary-600">
+                      ${producto.precio.toLocaleString('es-CO')}
+                    </span>
+                    <span className="text-gray-600">{producto.categoria?.nombre}</span>
+                  </div>
+
+                  {/* Estado */}
+                  <button
+                    onClick={() => toggleActivo(producto._id, producto.activo)}
+                    className={`w-full inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                      producto.activo
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                  >
+                    {producto.activo ? <FiEye /> : <FiEyeOff />}
+                    <span>{producto.activo ? 'Activo' : 'Inactivo'}</span>
+                  </button>
+
+                  {/* Acciones */}
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/admin/productos/${producto._id}`}
+                      className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      <FiEdit />
+                      <span>Editar</span>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(producto._id)}
+                      className="flex items-center justify-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                      title="Eliminar"
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
