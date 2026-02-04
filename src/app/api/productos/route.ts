@@ -77,13 +77,23 @@ export async function POST(request: NextRequest) {
     await connectDB();
     
     const body = await request.json();
+    console.log('📦 Body recibido en POST:', JSON.stringify(body, null, 2));
+    console.log('🖼️ Imágenes originales:', body.imagenes);
     
     // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
     if (body.imagenes && Array.isArray(body.imagenes)) {
+      const imagenesAntes = [...body.imagenes];
       body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
+      console.log('🧹 Imágenes antes del filtro:', imagenesAntes);
+      console.log('✅ Imágenes después del filtro:', body.imagenes);
+    } else {
+      console.log('⚠️ No hay array de imágenes o no es un array');
     }
     
+    console.log('💾 Creando producto con data:', JSON.stringify(body, null, 2));
     const producto = await Producto.create(body);
+    console.log('✅ Producto creado exitosamente:', producto._id);
+    console.log('🖼️ Imágenes guardadas en DB:', producto.imagenes);
     
     return successResponse(producto, 'Producto creado exitosamente');
   } catch (error: any) {

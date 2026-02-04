@@ -36,17 +36,27 @@ export async function PUT(
     await connectDB();
     
     const body = await request.json();
+    console.log('📦 Body recibido en PUT:', JSON.stringify(body, null, 2));
+    console.log('🖼️ Imágenes originales:', body.imagenes);
     
     // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
     if (body.imagenes && Array.isArray(body.imagenes)) {
+      const imagenesAntes = [...body.imagenes];
       body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
+      console.log('🧹 Imágenes antes del filtro:', imagenesAntes);
+      console.log('✅ Imágenes después del filtro:', body.imagenes);
+    } else {
+      console.log('⚠️ No hay array de imágenes o no es un array');
     }
     
+    console.log('💾 Actualizando producto', params.id, 'con data:', JSON.stringify(body, null, 2));
     const producto = await Producto.findByIdAndUpdate(
       params.id,
       body,
       { new: true, runValidators: true }
     ).populate('categoria', 'nombre slug');
+    console.log('✅ Producto actualizado:', producto?._id);
+    console.log('🖼️ Imágenes guardadas en DB:', producto?.imagenes);
     
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
