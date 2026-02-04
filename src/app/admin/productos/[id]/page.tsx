@@ -242,7 +242,8 @@ export default function ProductoFormPage() {
                 <label className="cursor-pointer">
                   <input
                     type="file"
-                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    accept="image/*"
+                    capture="user"
                     onChange={handleImageUpload}
                     disabled={uploadingImage}
                     className="hidden"
@@ -256,7 +257,7 @@ export default function ProductoFormPage() {
                     ) : (
                       <>
                         <FiCamera className="text-3xl text-gray-400 mb-2" />
-                        <span className="text-gray-600">Subir imagen</span>
+                        <span className="text-gray-600">Cámara o Galería</span>
                         <span className="text-sm text-gray-400 mt-1">
                           {formData.imagenes.length}/5 imágenes
                         </span>
