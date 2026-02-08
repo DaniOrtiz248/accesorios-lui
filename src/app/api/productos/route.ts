@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Producto from '@/models/Producto';
+import Categoria from '@/models/Categoria';
+import Material from '@/models/Material';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
 
