@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const precioMax = searchParams.get('precioMax');
     
     if (categoria) filtros.categoria = categoria;
-    if (material) filtros.material = { $regex: material, $options: 'i' };
+    if (material) filtros.material = material; // Buscar por ObjectId directamente
     if (busqueda) {
       filtros.$text = { $search: busqueda };
     }
@@ -55,14 +55,13 @@ export async function GET(request: NextRequest) {
     const [productos, total] = await Promise.all([
       Producto.find(filtros)
         .populate('categoria', 'nombre slug')
+        .populate('material', 'nombre')
         .sort(sort)
         .skip(skip)
         .limit(limit)
         .lean(),
       Producto.countDocuments(filtros),
     ]);
-    
-    console.log('⚠️ [API] Material populate deshabilitado temporalmente - productos usan material como String');
     
     console.log(`✅ [API] Query ejecutada: ${productos.length} productos encontrados de ${total} total`);
     console.log('📦 [API] Muestra de productos:', productos.slice(0, 2).map(p => ({
