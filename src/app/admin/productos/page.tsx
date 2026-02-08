@@ -43,16 +43,28 @@ export default function AdminProductosPage() {
   }, [isAuthenticated, isLoading]);
 
   const fetchProductos = async () => {
+    console.log('📋 [ADMIN] Iniciando fetchProductos...');
     try {
       const res = await fetch('/api/productos?limit=100&includeInactive=true');
+      console.log('📥 [ADMIN] Respuesta recibida:', { status: res.status, ok: res.ok });
+      
       const data = await res.json();
+      console.log('📦 [ADMIN] Datos parseados:', {
+        success: data.success,
+        productosCount: data.data?.productos?.length
+      });
+      
       if (data.success) {
+        console.log('✅ [ADMIN] Seteando productos:', data.data.productos.length);
         setProductos(data.data.productos);
+      } else {
+        console.error('⚠️ [ADMIN] Success = false:', data);
       }
     } catch (error) {
-      console.error('Error al cargar productos:', error);
+      console.error('❌ [ADMIN] Error al cargar productos:', error);
     } finally {
       setLoading(false);
+      console.log('✅ [ADMIN] Loading finalizado');
     }
   };
 

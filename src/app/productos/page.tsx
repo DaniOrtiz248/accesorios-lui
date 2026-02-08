@@ -37,6 +37,7 @@ function ProductosContent() {
   }, [page, filters]);
 
   const fetchProductos = async () => {
+    console.log('🔄 [CLIENTE] Iniciando fetchProductos...');
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -45,26 +46,39 @@ function ProductosContent() {
         ...filters,
       });
 
+      console.log('📡 [CLIENTE] Haciendo fetch a:', `/api/productos?${params}`);
       const res = await fetch(`/api/productos?${params}`);
       
+      console.log('📥 [CLIENTE] Respuesta recibida:', { status: res.status, ok: res.ok });
+      
       if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ [CLIENTE] Error HTTP:', errorText);
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       
       const data = await res.json();
+      console.log('📦 [CLIENTE] Datos parseados:', {
+        success: data.success,
+        productosCount: data.data?.productos?.length,
+        pagination: data.data?.pagination
+      });
 
       if (data.success && data.data) {
-        setProductos(data.data.productos || []);
+        const productosArray = data.data.productos || [];
+        console.log('✅ [CLIENTE] Seteando productos:', productosArray.length);
+        setProductos(productosArray);
         setTotalPages(data.data.pagination?.pages || 1);
       } else {
-        console.error('Respuesta sin datos:', data);
+        console.error('⚠️ [CLIENTE] Respuesta sin datos:', data);
         setProductos([]);
       }
     } catch (error) {
-      console.error('Error al cargar productos:', error);
+      console.error('❌ [CLIENTE] Error al cargar productos:', error);
       setProductos([]);
     } finally {
       setLoading(false);
+      console.log('✅ [CLIENTE] Loading finalizado');
     }
   };
 
