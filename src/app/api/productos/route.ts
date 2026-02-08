@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
     const [productos, total] = await Promise.all([
       Producto.find(filtros)
         .populate('categoria', 'nombre slug')
+        .populate('material', 'nombre')
         .sort(sort)
         .skip(skip)
         .limit(limit)
