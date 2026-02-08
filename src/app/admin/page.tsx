@@ -32,25 +32,25 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">Panel de Administración</h1>
-              <p className="text-sm text-gray-600">Bienvenida, {usuario?.nombre}</p>
+          <div className="flex items-center justify-between py-3 md:h-16 gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base md:text-xl font-bold text-gray-800 truncate">Panel de Administración</h1>
+              <p className="text-xs md:text-sm text-gray-600 truncate">Bienvenida, {usuario?.nombre}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
               <Link
                 href="/"
                 className="text-gray-600 hover:text-primary-600 transition"
                 title="Ver sitio público"
               >
-                <FiHome className="text-2xl" />
+                <FiHome className="text-xl md:text-2xl" />
               </Link>
               <button
                 onClick={logout}
-                className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition"
+                className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-red-600 transition text-sm md:text-base"
               >
                 <FiLogOut />
-                <span>Salir</span>
+                <span className="hidden sm:inline">Salir</span>
               </button>
             </div>
           </div>
