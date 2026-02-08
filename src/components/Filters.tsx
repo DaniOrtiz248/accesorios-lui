@@ -31,14 +31,18 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
   useEffect(() => {
     fetchCategorias();
     fetchMateriales();
-  }, []);
-
-  // Aplicar filtros iniciales cuando cambian
-  useEffect(() => {
+    
+    // Aplicar filtros iniciales inmediatamente
     if (initialFilters.categoria) {
       setCategoria(initialFilters.categoria);
     }
-  }, [initialFilters]);
+    if (initialFilters.material) {
+      setMaterial(initialFilters.material);
+    }
+    if (initialFilters.busqueda) {
+      setBusqueda(initialFilters.busqueda);
+    }
+  }, []);
 
   const fetchCategorias = async () => {
     try {
