@@ -14,6 +14,8 @@ export async function GET(
 ) {
   try {
     await connectDB();
+    // Force model registration for serverless cold starts
+    Categoria; Material;
     
     const producto = await Producto.findById(params.id)
       .populate('categoria', 'nombre slug')
@@ -38,6 +40,8 @@ export async function PUT(
   try {
     verifyAuth(request);
     await connectDB();
+    // Force model registration for serverless cold starts
+    Categoria; Material;
     
     const body = await request.json();
     console.log('📦 Body recibido en PUT:', JSON.stringify(body, null, 2));
@@ -85,6 +89,8 @@ export async function DELETE(
   try {
     verifyAuth(request);
     await connectDB();
+    // Force model registration for serverless cold starts
+    Categoria; Material;
     
     const producto = await Producto.findById(params.id);
     

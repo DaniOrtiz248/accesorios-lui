@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 [API] Iniciando GET /api/productos');
     await connectDB();
+    // Force model registration for serverless cold starts
+    Categoria; Material;
     console.log('✅ [API] Conexión a DB establecida');
     
     const { searchParams } = new URL(request.url);
@@ -109,6 +111,8 @@ export async function POST(request: NextRequest) {
   try {
     verifyAuth(request);
     await connectDB();
+    // Force model registration for serverless cold starts
+    Categoria; Material;
     
     const body = await request.json();
     console.log('📦 Body recibido en POST:', JSON.stringify(body, null, 2));
