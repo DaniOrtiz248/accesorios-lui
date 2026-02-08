@@ -28,25 +28,89 @@ interface Producto {
   }; // Siempre objeto simple con solo nombre
 }
 
+interface Categoria {
+  _id: string;
+  nombre: string;
+}
+
+interface Material {
+  _id: string;
+  nombre: string;
+}
+
 export default function AdminProductosPage() {
   const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [material, setMaterial] = useState('');
+  const [precioMin, setPrecioMin] = useState('');
+  const [precioMax, setPrecioMax] = useState('');
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [materiales, setMateriales] = useState<Material[]>([]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/admin/login');
     } else if (!isLoading && isAuthenticated) {
+      fetchCategorias();
+      fetchMateriales();
       fetchProductos();
     }
   }, [isAuthenticated, isLoading]);
 
+  // Auto-aplicar filtros con debounce para búsqueda
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchProductos();
+    }, busqueda ? 500 : 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [busqueda, categoria, material, precioMin, precioMax]);
+
+  const fetchCategorias = async () => {
+    try {
+      const res = await fetch('/api/categorias?includeInactive=true');
+      const data = await res.json();
+      if (data.success) {
+        setCategorias(data.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+    }
+  };
+
+  const fetchMateriales = async () => {
+    try {
+      const res = await fetch('/api/materiales');
+      const data = await res.json();
+      if (data.success) {
+        setMateriales(data.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar materiales:', error);
+    }
+  };
+
   const fetchProductos = async () => {
     console.log('📋 [ADMIN] Iniciando fetchProductos v2.0...');
     try {
-      const res = await fetch('/api/productos?limit=100&includeInactive=true');
+      const params = new URLSearchParams({
+        limit: '100',
+        includeInactive: 'true',
+      });
+
+      if (busqueda) params.append('busqueda', busqueda);
+      if (categoria) params.append('categoria', categoria);
+      if (material) params.append('material', material);
+      if (precioMin) params.append('precioMin', precioMin);
+      if (precioMax) params.append('precioMax', precioMax);
+
+      const res = await fetch(`/api/productos?${params.toString()}`);
       console.log('📥 [ADMIN] Respuesta recibida:', { status: res.status, ok: res.ok });
       
       const data = await res.json();
@@ -134,9 +198,13 @@ export default function AdminProductosPage() {
     }
   };
 
-  const productosFiltrados = productos.filter((p) =>
-    p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const handleClearFilters = () => {
+    setBusqueda('');
+    setCategoria('');
+    setMaterial('');
+    setPrecioMin('');
+    setPrecioMax('');
+  };
 
   if (isLoading) {
     return (
@@ -177,30 +245,87 @@ export default function AdminProductosPage() {
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Búsqueda */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="relative">
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
+        {/* Filtros */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            {/* Búsqueda */}
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar productos..."
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Categoría */}
+            <select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">Todas las categorías</option>
+              {categorias.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.nombre}
+                </option>
+              ))}
+            </select>
+
+            {/* Material */}
+            <select
+              value={material}
+              onChange={(e) => setMaterial(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">Todos los materiales</option>
+              {materiales.map((mat) => (
+                <option key={mat._id} value={mat._id}>
+                  {mat.nombre}
+                </option>
+              ))}
+            </select>
+
+            {/* Precio Mínimo */}
             <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar productos..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              type="number"
+              value={precioMin}
+              onChange={(e) => setPrecioMin(e.target.value)}
+              placeholder="Precio mínimo"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+
+            {/* Precio Máximo */}
+            <input
+              type="number"
+              value={precioMax}
+              onChange={(e) => setPrecioMax(e.target.value)}
+              placeholder="Precio máximo"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
+
+          {/* Botón Limpiar Filtros */}
+          <button
+            onClick={handleClearFilters}
+            className="px-4 py-2 text-sm text-primary-700 hover:text-primary-900 font-medium"
+          >
+            Limpiar filtros
+          </button>
         </div>
 
-        {/* Tabla */}
+        {/* Grid de productos */}
         {loading ? (
           <div className="text-center py-20">Cargando...</div>
-        ) : productosFiltrados.length === 0 ? (
+        ) : productos.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-xl text-gray-600">No hay productos</p>
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {productosFiltrados.map((producto) => (
+            {productos.map((producto) => (
               <div
                 key={producto._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
