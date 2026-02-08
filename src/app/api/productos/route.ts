@@ -7,7 +7,9 @@ import { successResponse, errorResponse, handleMongoError } from '@/lib/api-util
 // GET: Obtener productos con filtros (público)
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 [API] Iniciando GET /api/productos');
     await connectDB();
+    console.log('✅ [API] Conexión a DB establecida');
     
     const { searchParams } = new URL(request.url);
     
@@ -19,6 +21,7 @@ export async function GET(request: NextRequest) {
     if (!includeInactive) {
       filtros.activo = true;
     }
+    console.log('📊 [API] Filtros aplicados:', JSON.stringify(filtros));
     
     const categoria = searchParams.get('categoria');
     const material = searchParams.get('material');
@@ -45,6 +48,8 @@ export async function GET(request: NextRequest) {
     // Ordenamiento
     const sort = searchParams.get('sort') || '-createdAt';
     
+    console.log('🔎 [API] Ejecutando query con paginación:', { page, limit, skip, sort });
+    
     const [productos, total] = await Promise.all([
       Producto.find(filtros)
         .populate('categoria', 'nombre slug')
@@ -56,7 +61,15 @@ export async function GET(request: NextRequest) {
       Producto.countDocuments(filtros),
     ]);
     
-    return successResponse({
+    console.log(`✅ [API] Query ejecutada: ${productos.length} productos encontrados de ${total} total`);
+    console.log('📦 [API] Muestra de productos:', productos.slice(0, 2).map(p => ({
+      _id: p._id,
+      nombre: p.nombre,
+      material: p.material,
+      materialType: typeof p.material
+    })));
+    
+    const response = {
       productos,
       pagination: {
         page,
@@ -64,10 +77,14 @@ export async function GET(request: NextRequest) {
         total,
         pages: Math.ceil(total / limit),
       },
-    });
+    };
+    
+    console.log('📤 [API] Enviando respuesta exitosa');
+    return successResponse(response);
   } catch (error: any) {
-    console.error('Error al obtener productos:', error);
-    return errorResponse('Error al obtener productos', 500);
+    console.error('❌ [API] ERROR al obtener productos:', error);
+    console.error('❌ [API] Stack trace:', error.stack);
+    return errorResponse('Error al obtener productos: ' + error.message, 500);
   }
 }
 
