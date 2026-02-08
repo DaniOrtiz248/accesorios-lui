@@ -165,14 +165,14 @@ export default function AdminProductosPage() {
             <p className="text-xl text-gray-600">No hay productos</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {productosFiltrados.map((producto) => (
               <div
                 key={producto._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
               >
                 {/* Imagen */}
-                <div className="relative aspect-square bg-gray-100">
+                <div className="relative aspect-video bg-gray-100">
                   {producto.imagenes?.[0] ? (
                     <Image
                       src={producto.imagenes[0]}
@@ -181,34 +181,34 @@ export default function AdminProductosPage() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
+                    <div className="flex items-center justify-center h-full text-gray-400 text-sm">
                       Sin imagen
                     </div>
                   )}
                 </div>
 
                 {/* Contenido */}
-                <div className="p-4 space-y-3">
+                <div className="p-3 space-y-2">
                   {/* Nombre y Material */}
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-lg line-clamp-1">
+                    <h3 className="font-semibold text-gray-900 text-sm line-clamp-1">
                       {producto.nombre}
                     </h3>
-                    <p className="text-sm text-gray-500">{producto.material}</p>
+                    <p className="text-xs text-gray-500 line-clamp-1">{producto.material}</p>
                   </div>
 
                   {/* Precio y Categoría */}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-lg font-bold text-primary-600">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-sm font-bold text-primary-600">
                       ${producto.precio.toLocaleString('es-CO')}
                     </span>
-                    <span className="text-gray-600">{producto.categoria?.nombre}</span>
+                    <span className="text-gray-600 line-clamp-1">{producto.categoria?.nombre}</span>
                   </div>
 
                   {/* Estado */}
                   <button
                     onClick={() => toggleActivo(producto._id, producto.activo)}
-                    className={`w-full inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    className={`w-full inline-flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg text-xs font-medium transition ${
                       producto.activo
                         ? 'bg-green-100 text-green-800 hover:bg-green-200'
                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
@@ -222,17 +222,17 @@ export default function AdminProductosPage() {
                   <div className="flex gap-2">
                     <Link
                       href={`/admin/productos/${producto._id}`}
-                      className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                      className="flex-1 flex items-center justify-center space-x-1 bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700 transition text-xs"
                     >
-                      <FiEdit />
+                      <FiEdit className="text-sm" />
                       <span>Editar</span>
                     </Link>
                     <button
                       onClick={() => handleDelete(producto._id)}
-                      className="flex items-center justify-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                      className="flex items-center justify-center bg-red-600 text-white px-2 py-1.5 rounded-lg hover:bg-red-700 transition"
                       title="Eliminar"
                     >
-                      <FiTrash2 />
+                      <FiTrash2 className="text-sm" />
                     </button>
                   </div>
                 </div>
