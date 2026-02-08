@@ -13,7 +13,9 @@ export async function GET(
   try {
     await connectDB();
     
-    const producto = await Producto.findById(params.id).populate('categoria', 'nombre slug');
+    const producto = await Producto.findById(params.id)
+      .populate('categoria', 'nombre slug')
+      .populate('material', 'nombre');
     
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
@@ -54,7 +56,8 @@ export async function PUT(
       params.id,
       body,
       { new: true, runValidators: true }
-    ).populate('categoria', 'nombre slug');
+    ).populate('categoria', 'nombre slug')
+     .populate('material', 'nombre');
     console.log('✅ Producto actualizado:', producto?._id);
     console.log('🖼️ Imágenes guardadas en DB:', producto?.imagenes);
     

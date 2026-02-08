@@ -12,6 +12,11 @@ interface Categoria {
   nombre: string;
 }
 
+interface Material {
+  _id: string;
+  nombre: string;
+}
+
 export default function ProductoFormPage() {
   const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -19,6 +24,7 @@ export default function ProductoFormPage() {
   const isEditing = !!params.id && params.id !== 'nuevo';
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [materiales, setMateriales] = useState<Material[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -37,6 +43,7 @@ export default function ProductoFormPage() {
       router.push('/admin/login');
     } else if (!isLoading && isAuthenticated) {
       fetchCategorias();
+      fetchMateriales();
       if (isEditing) {
         fetchProducto();
       }
@@ -58,6 +65,21 @@ export default function ProductoFormPage() {
     }
   };
 
+  const fetchMateriales = async () => {
+    try {
+      const res = await fetch('/api/materiales');
+      const data = await res.json();
+      if (data.success) {
+        setMateriales(data.data);
+        if (data.data.length > 0 && !formData.material) {
+          setFormData((prev) => ({ ...prev, material: data.data[0]._id }));
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar materiales:', error);
+    }
+  };
+
   const fetchProducto = async () => {
     try {
       const res = await fetch(`/api/productos/${params.id}`);
@@ -68,8 +90,8 @@ export default function ProductoFormPage() {
           nombre: producto.nombre,
           descripcion: producto.descripcion,
           precio: producto.precio.toString(),
-          material: producto.material,
-          categoria: producto.categoria._id || producto.categoria,
+          material: producto.material?._id || producto.material,
+          categoria: producto.categoria?._id || producto.categoria,
           imagenes: producto.imagenes || [],
           activo: producto.activo,
         });
@@ -354,14 +376,19 @@ export default function ProductoFormPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Material *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.material}
                   onChange={(e) => setFormData({ ...formData, material: e.target.value })}
                   required
                   className="input-field"
-                  placeholder="Ej: Plata 925"
-                />
+                >
+                  <option value="">Selecciona un material</option>
+                  {materiales.map((mat) => (
+                    <option key={mat._id} value={mat._id}>
+                      {mat.nombre}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

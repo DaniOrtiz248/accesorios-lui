@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiPackage, FiTag, FiLogOut, FiHome } from 'react-icons/fi';
+import { FiPackage, FiTag, FiLogOut, FiHome, FiBox } from 'react-icons/fi';
 
 export default function AdminDashboard() {
   const { usuario, logout, isAuthenticated, isLoading } = useAuth();
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {/* Productos Card */}
           <Link
             href="/admin/productos"
@@ -89,6 +89,22 @@ export default function AdminDashboard() {
             </div>
             <p className="text-gray-600">
               Administra las categorías de tus productos para mejor organización.
+            </p>
+          </Link>
+
+          {/* Materiales Card */}
+          <Link
+            href="/admin/materiales"
+            className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="p-3 bg-primary-100 rounded-full">
+                <FiBox className="text-3xl text-primary-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800">Materiales</h2>
+            </div>
+            <p className="text-gray-600">
+              Gestiona los materiales disponibles para tus productos.
             </p>
           </Link>
         </div>
