@@ -19,12 +19,13 @@ interface Producto {
   _id: string;
   nombre: string;
   precio: number;
-  material: { _id: string; nombre: string } | string;
+  material: { _id: string; nombre: string } | string | null;
   imagenes: string[];
   activo: boolean;
   categoria: {
+    _id?: string;
     nombre: string;
-  };
+  } | null;
 }
 
 export default function AdminProductosPage() {
@@ -207,9 +208,11 @@ export default function AdminProductosPage() {
                       {producto.nombre}
                     </h3>
                     <p className="text-xs text-gray-500 line-clamp-1">
-                      {typeof producto.material === 'string' 
-                        ? producto.material 
-                        : producto.material?.nombre || 'Sin material'}
+                      {typeof producto.material === 'object' && producto.material !== null
+                        ? producto.material.nombre || 'Sin material'
+                        : typeof producto.material === 'string'
+                        ? producto.material
+                        : 'Sin material'}
                     </p>
                   </div>
 
@@ -218,7 +221,11 @@ export default function AdminProductosPage() {
                     <span className="text-sm font-bold text-primary-600">
                       ${producto.precio.toLocaleString('es-CO')}
                     </span>
-                    <span className="text-gray-600 line-clamp-1">{producto.categoria?.nombre}</span>
+                    <span className="text-gray-600 line-clamp-1">
+                      {typeof producto.categoria === 'object' && producto.categoria !== null
+                        ? producto.categoria.nombre || 'Sin categoría'
+                        : 'Sin categoría'}
+                    </span>
                   </div>
 
                   {/* Estado */}
