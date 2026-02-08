@@ -5,6 +5,7 @@ import Categoria from '@/models/Categoria';
 import Material from '@/models/Material';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
+import mongoose from 'mongoose';
 
 // GET: Obtener productos con filtros (público)
 export async function GET(request: NextRequest) {
@@ -32,7 +33,22 @@ export async function GET(request: NextRequest) {
     const precioMax = searchParams.get('precioMax');
     
     if (categoria) filtros.categoria = categoria;
-    if (material) filtros.material = material; // Buscar por ObjectId directamente
+    if (material) {
+      console.log('🎨 [API] Filtrando por material:', material);
+      // Buscar material tanto como ObjectId como String (para migración)
+      try {
+        const materialObjectId = new mongoose.Types.ObjectId(material);
+        filtros.$or = [
+          { material: materialObjectId },
+          { material: material }
+        ];
+        console.log('✅ [API] Filtro OR creado para ObjectId y String');
+      } catch (e) {
+        // Si no es un ObjectId válido, buscar como string
+        filtros.material = { $regex: material, $options: 'i' };
+        console.log('⚠️ [API] No es ObjectId válido, usando regex');
+      }
+    }
     if (busqueda) {
       filtros.$text = { $search: busqueda };
     }
@@ -51,6 +67,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || '-createdAt';
     
     console.log('🔎 [API] Ejecutando query con paginación:', { page, limit, skip, sort });
+    console.log('🔍 [API] Filtros finales:', JSON.stringify(filtros, null, 2));
     
     const [productos, total] = await Promise.all([
       Producto.find(filtros)
@@ -64,12 +81,14 @@ export async function GET(request: NextRequest) {
     ]);
     
     console.log(`✅ [API] Query ejecutada: ${productos.length} productos encontrados de ${total} total`);
-    console.log('📦 [API] Muestra de productos:', productos.slice(0, 2).map(p => ({
-      _id: p._id,
-      nombre: p.nombre,
-      material: p.material,
-      materialType: typeof p.material
-    })));
+    if (material && productos.length > 0) {
+      console.log('📦 [API] Materiales de productos encontrados:', productos.map(p => ({
+        nombre: p.nombre,
+        material: p.material,
+        materialType: typeof p.material,
+        materialId: p.material?._id || p.material
+      })));
+    }
     
     const response = {
       productos,

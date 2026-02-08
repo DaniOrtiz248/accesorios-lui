@@ -19,7 +19,7 @@ interface Producto {
   _id: string;
   nombre: string;
   precio: number;
-  material: string;
+  material: { _id: string; nombre: string } | string;
   imagenes: string[];
   activo: boolean;
   categoria: {
@@ -206,7 +206,11 @@ export default function AdminProductosPage() {
                     <h3 className="font-semibold text-gray-900 text-sm line-clamp-1">
                       {producto.nombre}
                     </h3>
-                    <p className="text-xs text-gray-500 line-clamp-1">{producto.material}</p>
+                    <p className="text-xs text-gray-500 line-clamp-1">
+                      {typeof producto.material === 'string' 
+                        ? producto.material 
+                        : producto.material?.nombre || 'Sin material'}
+                    </p>
                   </div>
 
                   {/* Precio y Categoría */}
