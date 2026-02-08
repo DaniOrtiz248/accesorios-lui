@@ -22,15 +22,18 @@ function ProductosContent() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProductos, setTotalProductos] = useState(0);
-  const [filters, setFilters] = useState<any>({});
-
-  // Leer categoría de la URL al cargar
-  useEffect(() => {
+  
+  // Inicializar filters con los parámetros de la URL desde el principio
+  const [filters, setFilters] = useState<any>(() => {
     const categoriaFromUrl = searchParams.get('categoria');
-    if (categoriaFromUrl) {
-      setFilters({ categoria: categoriaFromUrl });
-    }
-  }, [searchParams]);
+    const materialFromUrl = searchParams.get('material');
+    const initialFilters: any = {};
+    
+    if (categoriaFromUrl) initialFilters.categoria = categoriaFromUrl;
+    if (materialFromUrl) initialFilters.material = materialFromUrl;
+    
+    return initialFilters;
+  });
 
   // Fetch productos cuando cambien page o filters
   useEffect(() => {
