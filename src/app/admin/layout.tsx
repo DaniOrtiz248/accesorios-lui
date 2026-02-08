@@ -26,8 +26,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Si no está autenticado y no es login, solo mostrar children (el redirect se maneja en cada página)
-  return <>{children}</>;
+  // Si no está autenticado y no es login, mostrar sin navbar (la página se encarga del redirect)
+  return (
+    <div className="min-h-screen flex flex-col bg-primary-50">
+      <main className="flex-grow container mx-auto px-4 py-8">
+        {children}
+      </main>
+    </div>
+  );
 }
 
 export default function AdminLayout({
