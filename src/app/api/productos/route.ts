@@ -82,12 +82,7 @@ export async function GET(request: NextRequest) {
     
     console.log(`✅ [API] Query ejecutada: ${productos.length} productos encontrados de ${total} total`);
     if (material && productos.length > 0) {
-      console.log('📦 [API] Materiales de productos encontrados:', productos.map(p => ({
-        nombre: p.nombre,
-        material: p.material,
-        materialType: typeof p.material,
-        materialId: p.material?._id || p.material
-      })));
+      console.log('📦 [API] Materiales encontrados:', productos.length);
     }
     
     const response = {
