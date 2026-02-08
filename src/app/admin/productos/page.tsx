@@ -15,6 +15,7 @@ import {
   FiEyeOff,
 } from 'react-icons/fi';
 
+// Versión 2.0 - Material y categoría como objetos con verificación de tipos
 interface Producto {
   _id: string;
   nombre: string;
@@ -44,7 +45,7 @@ export default function AdminProductosPage() {
   }, [isAuthenticated, isLoading]);
 
   const fetchProductos = async () => {
-    console.log('📋 [ADMIN] Iniciando fetchProductos...');
+    console.log('📋 [ADMIN] Iniciando fetchProductos v2.0...');
     try {
       const res = await fetch('/api/productos?limit=100&includeInactive=true');
       console.log('📥 [ADMIN] Respuesta recibida:', { status: res.status, ok: res.ok });
@@ -56,8 +57,22 @@ export default function AdminProductosPage() {
       });
       
       if (data.success) {
-        console.log('✅ [ADMIN] Seteando productos:', data.data.productos.length);
-        setProductos(data.data.productos);
+        const productos = data.data.productos;
+        console.log('✅ [ADMIN] Seteando productos:', productos.length);
+        
+        // Debug: Mostrar estructura del primer producto
+        if (productos.length > 0) {
+          const primer = productos[0];
+          console.log('🔍 [ADMIN] Primer producto:', {
+            nombre: primer.nombre,
+            materialType: typeof primer.material,
+            materialValue: typeof primer.material === 'object' ? 'OBJECT' : primer.material,
+            categoriaType: typeof primer.categoria,
+            categoriaValue: typeof primer.categoria === 'object' ? 'OBJECT' : primer.categoria
+          });
+        }
+        
+        setProductos(productos);
       } else {
         console.error('⚠️ [ADMIN] Success = false:', data);
       }
