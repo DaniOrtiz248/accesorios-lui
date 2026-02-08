@@ -10,7 +10,6 @@ interface Material {
   _id: string;
   nombre: string;
   descripcion?: string;
-  productosCount?: number;
 }
 
 export default function AdminMaterialesPage() {
@@ -35,7 +34,7 @@ export default function AdminMaterialesPage() {
 
   const fetchMateriales = async () => {
     try {
-      const res = await fetch('/api/materiales?includeCount=true');
+      const res = await fetch('/api/materiales');
       const data = await res.json();
       if (data.success) {
         setMateriales(data.data);
@@ -234,15 +233,7 @@ export default function AdminMaterialesPage() {
                   </div>
                   <FiBox className="text-2xl text-primary-600" />
                 </div>
-                <div className="mb-4 pb-4 border-b">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-600">Productos:</span>
-                    <span className="inline-block px-3 py-1 rounded-full text-sm font-bold bg-accent-light text-primary-900">
-                      {material.productosCount || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-4">
                   <button
                     onClick={() => handleEdit(material)}
                     className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
