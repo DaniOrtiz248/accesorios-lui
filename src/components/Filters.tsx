@@ -129,7 +129,7 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
           >
             <option value="">Todos</option>
             {materiales.map((mat) => (
-              <option key={mat._id} value={mat.nombre}>
+              <option key={mat._id} value={mat._id}>
                 {mat.nombre}
               </option>
             ))}
