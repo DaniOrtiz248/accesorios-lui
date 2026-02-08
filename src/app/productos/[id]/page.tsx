@@ -11,7 +11,7 @@ interface Producto {
   nombre: string;
   descripcion: string;
   precio: number;
-  material: string;
+  material: { nombre: string } | string;
   imagenes: string[];
   categoria: {
     nombre: string;
@@ -166,7 +166,8 @@ export default function ProductoDetallePage() {
               <span className="font-semibold">Categoría:</span> {producto.categoria?.nombre}
             </div>
             <div>
-              <span className="font-semibold">Material:</span> {producto.material}
+              <span className="font-semibold">Material:</span>{' '}
+              {typeof producto.material === 'string' ? producto.material : producto.material?.nombre}
             </div>
           </div>
 
