@@ -47,10 +47,10 @@ export default function AdminNavbar() {
               <span className="text-sm text-primary-100">{usuario?.nombre}</span>
               <button
                 onClick={logout}
-                className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition"
+                className="flex items-center space-x-1.5 bg-primary-700 hover:bg-primary-800 text-accent-light px-3 py-1.5 rounded-md transition text-sm font-medium border border-primary-600"
               >
-                <FiLogOut />
-                <span>Cerrar Sesión</span>
+                <FiLogOut className="text-base" />
+                <span>Salir</span>
               </button>
             </div>
           </div>
@@ -60,9 +60,9 @@ export default function AdminNavbar() {
             <span className="text-xs text-primary-100">{usuario?.nombre}</span>
             <button
               onClick={logout}
-              className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg transition text-sm"
+              className="flex items-center space-x-1 bg-primary-700 hover:bg-primary-800 text-accent-light px-2.5 py-1.5 rounded-md transition text-xs font-medium border border-primary-600"
             >
-              <FiLogOut />
+              <FiLogOut className="text-sm" />
               <span>Salir</span>
             </button>
           </div>
