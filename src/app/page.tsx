@@ -36,17 +36,17 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary-500 to-primary-700 text-white py-20">
+      <section className="bg-gradient-to-br from-primary-400 via-accent to-primary-600 text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
             Bienvenido a Accesorios LUI
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto drop-shadow">
             Los mejores accesorios para complementar tu estilo. Calidad y elegancia al mejor precio.
           </p>
           <Link
             href="/productos"
-            className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition"
+            className="inline-block bg-white text-primary-800 px-8 py-4 rounded-lg font-bold text-lg hover:bg-primary-50 transition shadow-lg hover:shadow-xl"
           >
             Ver Productos
           </Link>
@@ -54,33 +54,33 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-background-light">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="inline-block p-4 bg-primary-100 rounded-full mb-4">
-                <FiShoppingBag className="text-4xl text-primary-600" />
+              <div className="inline-block p-4 bg-accent-light rounded-full mb-4">
+                <FiShoppingBag className="text-4xl text-primary-800" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Variedad de Productos</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold mb-2 text-primary-900">Variedad de Productos</h3>
+              <p className="text-primary-700">
                 Anillos, collares, pulseras, bolsos y mucho más
               </p>
             </div>
             <div className="text-center">
-              <div className="inline-block p-4 bg-primary-100 rounded-full mb-4">
-                <FiTrendingUp className="text-4xl text-primary-600" />
+              <div className="inline-block p-4 bg-accent-light rounded-full mb-4">
+                <FiTrendingUp className="text-4xl text-primary-800" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Mejores Precios</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold mb-2 text-primary-900">Mejores Precios</h3>
+              <p className="text-primary-700">
                 Calidad excepcional a precios accesibles
               </p>
             </div>
             <div className="text-center">
-              <div className="inline-block p-4 bg-primary-100 rounded-full mb-4">
-                <FiHeart className="text-4xl text-primary-600" />
+              <div className="inline-block p-4 bg-accent-light rounded-full mb-4">
+                <FiHeart className="text-4xl text-primary-800" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Hecho con Amor</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold mb-2 text-primary-900">Hecho con Amor</h3>
+              <p className="text-primary-700">
                 Cada pieza seleccionada con dedicación
               </p>
             </div>
@@ -90,17 +90,17 @@ export default function Home() {
 
       {/* Categories Preview */}
       {!loading && categorias.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-primary-50">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Nuestras Categorías</h2>
+            <h2 className="text-3xl font-bold text-center mb-12 text-primary-900">Nuestras Categorías</h2>
             <div className="flex flex-wrap justify-center gap-6">
               {categorias.map((cat) => (
                 <Link
                   key={cat._id}
                   href={`/productos?categoria=${cat._id}`}
-                  className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-xl transition w-40"
+                  className="bg-white border border-primary-100 rounded-lg shadow-md p-6 text-center hover:shadow-xl hover:border-accent transition w-40"
                 >
-                  <h3 className="text-xl font-bold text-gray-800">{cat.nombre}</h3>
+                  <h3 className="text-xl font-bold text-primary-800">{cat.nombre}</h3>
                 </Link>
               ))}
             </div>
@@ -109,17 +109,17 @@ export default function Home() {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary-600 text-white">
+      <section className="py-16 bg-gradient-to-r from-accent-dark to-primary-700 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 drop-shadow-lg">
             ¿Lista para encontrar el accesorio perfecto?
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 max-w-2xl mx-auto drop-shadow">
             Explora nuestro catálogo completo y encuentra lo que buscas
           </p>
           <Link
             href="/productos"
-            className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition"
+            className="inline-block bg-white text-primary-800 px-8 py-4 rounded-lg font-bold text-lg hover:bg-primary-50 transition shadow-lg hover:shadow-xl"
           >
             Explorar Ahora
           </Link>

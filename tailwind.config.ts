@@ -10,17 +10,26 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          50: '#fdf2f8',
-          100: '#fce7f3',
-          200: '#fbcfe8',
-          300: '#f9a8d4',
-          400: '#f472b6',
-          500: '#ec4899',
-          600: '#db2777',
-          700: '#be185d',
-          800: '#9d174d',
-          900: '#831843',
+          50: '#FBF8F1',   // Crema muy claro
+          100: '#E4DDCB',  // Beige suave
+          200: '#E8D0A4',  // Dorado claro
+          300: '#DDB97A',  // Dorado medio
+          400: '#CAA076',  // Caramelo dorado
+          500: '#B88A5F',  // Tierra oscuro
+          600: '#9D7355',  // Marrón cálido
+          700: '#7C6C5F',  // Marrón grisáceo
+          800: '#4A433C',  // Marrón oscuro
+          900: '#2E2E24',  // Verde oscuro/negro
         },
+        accent: {
+          light: '#E8D0A4',
+          DEFAULT: '#CAA076',
+          dark: '#7C6C5F',
+        },
+        background: {
+          light: '#FBF8F1',
+          DEFAULT: '#E4DDCB',
+        }
       },
     },
   },

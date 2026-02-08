@@ -14,7 +14,7 @@ export default function AdminLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} flex flex-col min-h-screen bg-gray-50`}>
+      <body className={`${inter.className} flex flex-col min-h-screen bg-primary-50`}>
         <AuthProvider>
           <AdminNavbar />
           <main className="flex-grow container mx-auto px-4 py-8">

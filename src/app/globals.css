@@ -4,24 +4,24 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-background-light text-primary-900;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium;
+    @apply px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors font-medium shadow-md hover:shadow-lg;
   }
   
   .btn-secondary {
-    @apply px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium;
+    @apply px-6 py-2 border border-primary-200 text-primary-800 rounded-lg hover:bg-primary-50 transition-colors font-medium;
   }
   
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+    @apply w-full px-4 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all bg-white;
   }
   
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-white border border-primary-100 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
   }
 }

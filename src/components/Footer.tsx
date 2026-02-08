@@ -5,13 +5,13 @@ import { FaWhatsapp } from 'react-icons/fa';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white mt-auto">
+    <footer className="bg-primary-900 text-background-light mt-auto">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Info */}
           <div>
             <h3 className="text-xl font-bold mb-4">Accesorios LUI</h3>
-            <p className="text-gray-300">
+            <p className="text-primary-100">
               Los mejores accesorios para ti. Anillos, collares, pulseras, bolsos y más.
             </p>
           </div>
@@ -19,7 +19,7 @@ export default function Footer() {
           {/* Dirección */}
           <div>
             <h3 className="text-xl font-bold mb-4">Visítanos</h3>
-            <p className="text-gray-300">
+            <p className="text-primary-100">
               Mz 2 Casa 4, 1° piso<br />
               Barrio Bello Horizonte<br />
               Pereira, Cuba
@@ -31,12 +31,12 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-4">Enlaces</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-gray-300 hover:text-white transition">
+                <a href="/" className="text-primary-100 hover:text-accent-light transition">
                   Inicio
                 </a>
               </li>
               <li>
-                <a href="/productos" className="text-gray-300 hover:text-white transition">
+                <a href="/productos" className="text-primary-100 hover:text-accent-light transition">
                   Productos
                 </a>
               </li>
@@ -60,7 +60,7 @@ export default function Footer() {
                 href="https://www.instagram.com/accesorioslui07/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-pink-400 hover:text-pink-300 transition"
+                className="text-accent-light hover:text-accent transition"
                 aria-label="Instagram"
               >
                 <FiInstagram className="text-3xl" />
@@ -69,7 +69,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+        <div className="border-t border-primary-700 mt-8 pt-6 text-center text-primary-200">
           <p>&copy; {new Date().getFullYear()} Accesorios LUI. Todos los derechos reservados.</p>
         </div>
       </div>
