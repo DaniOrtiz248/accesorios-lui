@@ -15,18 +15,17 @@ import {
   FiEyeOff,
 } from 'react-icons/fi';
 
-// Versión 2.0 - Material y categoría como objetos con verificación de tipos
+// Versión 2.1 - Transformando datos para prevenir objetos en React children
 interface Producto {
   _id: string;
   nombre: string;
   precio: number;
-  material: { _id: string; nombre: string } | string | null;
+  material: string; // Siempre string después de transformación
   imagenes: string[];
   activo: boolean;
   categoria: {
-    _id?: string;
     nombre: string;
-  } | null;
+  }; // Siempre objeto simple con solo nombre
 }
 
 export default function AdminProductosPage() {
@@ -57,22 +56,29 @@ export default function AdminProductosPage() {
       });
       
       if (data.success) {
-        const productos = data.data.productos;
-        console.log('✅ [ADMIN] Seteando productos:', productos.length);
+        const productosRaw = data.data.productos;
         
-        // Debug: Mostrar estructura del primer producto
-        if (productos.length > 0) {
-          const primer = productos[0];
-          console.log('🔍 [ADMIN] Primer producto:', {
-            nombre: primer.nombre,
-            materialType: typeof primer.material,
-            materialValue: typeof primer.material === 'object' ? 'OBJECT' : primer.material,
-            categoriaType: typeof primer.categoria,
-            categoriaValue: typeof primer.categoria === 'object' ? 'OBJECT' : primer.categoria
-          });
-        }
+        // Transformar productos para asegurar que material y categoria sean seguros
+        const productosTransformados = productosRaw.map((p: any) => ({
+          _id: p._id,
+          nombre: p.nombre,
+          precio: p.precio,
+          imagenes: p.imagenes || [],
+          activo: p.activo,
+          // Extraer solo el nombre del material
+          material: typeof p.material === 'object' && p.material !== null
+            ? p.material.nombre || 'Sin material'
+            : typeof p.material === 'string'
+            ? p.material
+            : 'Sin material',
+          // Extraer solo el nombre de la categoría
+          categoria: typeof p.categoria === 'object' && p.categoria !== null
+            ? { nombre: p.categoria.nombre || 'Sin categoría' }
+            : { nombre: 'Sin categoría' }
+        }));
         
-        setProductos(productos);
+        console.log('✅ [ADMIN] Seteando productos transformados:', productosTransformados.length);
+        setProductos(productosTransformados);
       } else {
         console.error('⚠️ [ADMIN] Success = false:', data);
       }
@@ -223,11 +229,7 @@ export default function AdminProductosPage() {
                       {producto.nombre}
                     </h3>
                     <p className="text-xs text-gray-500 line-clamp-1">
-                      {typeof producto.material === 'object' && producto.material !== null
-                        ? producto.material.nombre || 'Sin material'
-                        : typeof producto.material === 'string'
-                        ? producto.material
-                        : 'Sin material'}
+                      {producto.material}
                     </p>
                   </div>
 
@@ -237,9 +239,7 @@ export default function AdminProductosPage() {
                       ${producto.precio.toLocaleString('es-CO')}
                     </span>
                     <span className="text-gray-600 line-clamp-1">
-                      {typeof producto.categoria === 'object' && producto.categoria !== null
-                        ? producto.categoria.nombre || 'Sin categoría'
-                        : 'Sin categoría'}
+                      {producto.categoria.nombre}
                     </span>
                   </div>
 
