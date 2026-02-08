@@ -9,21 +9,21 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-background-light shadow-md sticky top-0 z-50 border-b border-primary-100">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <FiShoppingBag className="text-primary-600 text-2xl" />
-            <span className="text-xl font-bold text-gray-800">Accesorios LUI</span>
+            <FiShoppingBag className="text-primary-400 text-2xl" />
+            <span className="text-xl font-bold text-primary-900">Accesorios LUI</span>
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/" className="text-primary-700 hover:text-primary-400 transition font-medium">
               Inicio
             </Link>
-            <Link href="/productos" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/productos" className="text-primary-700 hover:text-primary-400 transition font-medium">
               Productos
             </Link>
             <div className="flex items-center space-x-4 ml-4">
@@ -40,7 +40,7 @@ export default function Navbar() {
                 href="https://www.instagram.com/accesorioslui07/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-pink-600 hover:text-pink-700 transition"
+                className="text-primary-400 hover:text-primary-500 transition"
                 aria-label="Instagram"
               >
                 <FiInstagram className="text-2xl" />
@@ -51,7 +51,7 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-gray-700"
+            className="md:hidden text-primary-900"
             aria-label="Toggle menu"
           >
             {isOpen ? <FiX className="text-2xl" /> : <FiMenu className="text-2xl" />}
@@ -69,14 +69,14 @@ export default function Navbar() {
               <Link
                 href="/"
                 onClick={() => setIsOpen(false)}
-                className="text-gray-700 hover:text-primary-600 hover:bg-gray-50 px-2 py-2 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                className="text-primary-800 hover:text-primary-400 hover:bg-primary-50 px-2 py-2 rounded-lg transition-all duration-200 transform hover:translate-x-1 font-medium"
               >
                 Inicio
               </Link>
               <Link
                 href="/productos"
                 onClick={() => setIsOpen(false)}
-                className="text-gray-700 hover:text-primary-600 hover:bg-gray-50 px-2 py-2 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                className="text-primary-800 hover:text-primary-400 hover:bg-primary-50 px-2 py-2 rounded-lg transition-all duration-200 transform hover:translate-x-1 font-medium"
               >
                 Productos
               </Link>
@@ -94,7 +94,7 @@ export default function Navbar() {
                   href="https://www.instagram.com/accesorioslui07/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-pink-600 hover:text-pink-700 hover:scale-110 transition-transform duration-200"
+                  className="text-primary-400 hover:text-primary-500 hover:scale-110 transition-transform duration-200"
                   aria-label="Instagram"
                 >
                   <FiInstagram className="text-2xl" />

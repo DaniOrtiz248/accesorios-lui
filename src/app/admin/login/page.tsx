@@ -26,14 +26,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 px-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-400 via-accent to-primary-700 px-4">
+      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md border border-primary-100">
         <div className="text-center mb-8">
-          <div className="inline-block p-3 bg-primary-100 rounded-full mb-4">
-            <FiShoppingBag className="text-4xl text-primary-600" />
+          <div className="inline-block p-3 bg-accent-light rounded-full mb-4">
+            <FiShoppingBag className="text-4xl text-primary-800" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Accesorios LUI</h1>
-          <p className="text-gray-600 mt-2">Panel de Administración</p>
+          <h1 className="text-3xl font-bold text-primary-900">Accesorios LUI</h1>
+          <p className="text-primary-700 mt-2 font-medium">Panel de Administración</p>
         </div>
 
         {error && (
@@ -44,34 +44,34 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-primary-800 mb-2">
               Usuario
             </label>
             <div className="relative">
-              <FiMail className="absolute left-3 top-3 text-gray-400" />
+              <FiMail className="absolute left-3 top-3 text-primary-400" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 placeholder="usuario"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-primary-800 mb-2">
               Contraseña
             </label>
             <div className="relative">
-              <FiLock className="absolute left-3 top-3 text-gray-400" />
+              <FiLock className="absolute left-3 top-3 text-primary-400" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
@@ -80,13 +80,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-accent text-white py-3 rounded-lg font-bold hover:bg-accent-dark transition shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm text-primary-600">
           <p>Solo administradores autorizados</p>
         </div>
       </div>
