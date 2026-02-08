@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -27,6 +27,10 @@ export default function ProductoFormPage() {
   const [materiales, setMateriales] = useState<Material[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -49,6 +53,15 @@ export default function ProductoFormPage() {
       }
     }
   }, [isAuthenticated, isLoading, isEditing]);
+
+  // Limpiar webcam al desmontar
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const fetchCategorias = async () => {
     try {
@@ -98,6 +111,107 @@ export default function ProductoFormPage() {
       }
     } catch (error) {
       console.error('Error al cargar producto:', error);
+    }
+  };
+
+  // Detectar si es dispositivo móvil
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Abrir webcam
+  const openWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setShowWebcam(true);
+    } catch (error) {
+      console.error('Error al acceder a la cámara:', error);
+      alert('No se pudo acceder a la cámara. Verifica los permisos.');
+    }
+  };
+
+  // Cerrar webcam
+  const closeWebcam = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowWebcam(false);
+  };
+
+  // Capturar foto desde webcam
+  const capturePhoto = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.drawImage(video, 0, 0);
+    
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      
+      closeWebcam();
+      await uploadImageBlob(blob);
+    }, 'image/jpeg', 0.9);
+  };
+
+  // Manejar clic en botón cámara
+  const handleCameraClick = () => {
+    if (isMobile()) {
+      // En móvil, usar el input con capture
+      document.getElementById('camera-input')?.click();
+    } else {
+      // En PC, abrir webcam
+      openWebcam();
+    }
+  };
+
+  // Upload imagen desde blob (webcam)
+  const uploadImageBlob = async (blob: Blob) => {
+    setUploadingImage(true);
+    console.log('📸 Foto capturada desde webcam');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', blob, 'webcam-photo.jpg');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const imageUrl = data.data?.url || data.url;
+        console.log('✅ Imagen subida exitosamente:', imageUrl);
+        setFormData((prev) => ({
+          ...prev,
+          imagenes: [...prev.imagenes, imageUrl],
+        }));
+      } else {
+        alert('Error al subir la imagen');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al subir la imagen');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -263,15 +377,21 @@ export default function ProductoFormPage() {
               {formData.imagenes.length < 5 && (
                 <div className="grid grid-cols-2 gap-3">
                   {/* Botón Cámara */}
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImage}
-                      className="hidden"
-                    />
+                  <input
+                    id="camera-input"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCameraClick}
+                    disabled={uploadingImage}
+                    className="cursor-pointer"
+                  >
                     <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition flex flex-col items-center justify-center min-h-[120px]">
                       {uploadingImage ? (
                         <>
@@ -288,7 +408,7 @@ export default function ProductoFormPage() {
                         </>
                       )}
                     </div>
-                  </label>
+                  </button>
 
                   {/* Botón Galería */}
                   <label className="cursor-pointer">
@@ -445,6 +565,50 @@ export default function ProductoFormPage() {
           </form>
         </div>
       </main>
+
+      {/* Modal Webcam */}
+      {showWebcam && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-800">Capturar Foto</h3>
+              <button
+                onClick={closeWebcam}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FiX className="text-2xl" />
+              </button>
+            </div>
+            
+            <div className="relative bg-black rounded-lg overflow-hidden mb-4">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full max-h-[60vh] object-contain"
+              />
+            </div>
+
+            <canvas ref={canvasRef} className="hidden" />
+
+            <div className="flex space-x-3">
+              <button
+                onClick={closeWebcam}
+                className="flex-1 btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={capturePhoto}
+                className="flex-1 btn-primary flex items-center justify-center space-x-2"
+              >
+                <FiCamera />
+                <span>Tomar Foto</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
