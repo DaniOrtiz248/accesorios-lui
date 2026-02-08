@@ -21,6 +21,7 @@ function ProductosContent() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalProductos, setTotalProductos] = useState(0);
   const [filters, setFilters] = useState<any>({});
 
   // Leer categoría de la URL al cargar
@@ -69,6 +70,7 @@ function ProductosContent() {
         console.log('✅ [CLIENTE] Seteando productos:', productosArray.length);
         setProductos(productosArray);
         setTotalPages(data.data.pagination?.pages || 1);
+        setTotalProductos(data.data.pagination?.total || 0);
       } else {
         console.error('⚠️ [CLIENTE] Respuesta sin datos:', data);
         setProductos([]);
@@ -87,11 +89,31 @@ function ProductosContent() {
     setPage(1);
   };
 
+  const handlePageChange = (nuevaPagina: number) => {
+    setPage(nuevaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-8">Nuestros Productos</h1>
 
       <Filters onFilterChange={handleFilterChange} initialFilters={filters} />
+
+      {/* Contador de resultados */}
+      {!loading && (
+        <div className="text-center mb-6">
+          <span className="text-lg text-gray-700 font-medium">
+            {totalProductos === 0 ? (
+              'No se encontraron productos'
+            ) : totalProductos === 1 ? (
+              '1 producto disponible'
+            ) : (
+              `${totalProductos} productos disponibles`
+            )}
+          </span>
+        </div>
+      )}
 
       {loading ? (
         <Loading />
@@ -107,23 +129,72 @@ function ProductosContent() {
             ))}
           </div>
 
-          {/* Paginación */}
+          {/* Paginación mejorada */}
           {totalPages > 1 && (
-            <div className="flex justify-center mt-12 space-x-2">
+            <div className="flex justify-center items-center gap-2 mt-12">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Anterior
               </button>
-              <span className="px-4 py-2">
-                Página {page} de {totalPages}
-              </span>
+              
+              <div className="flex gap-2">
+                {/* Primera página */}
+                {page > 3 && (
+                  <>
+                    <button
+                      onClick={() => handlePageChange(1)}
+                      className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition"
+                    >
+                      1
+                    </button>
+                    {page > 4 && <span className="px-2 py-2">...</span>}
+                  </>
+                )}
+                
+                {/* Páginas cercanas */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => {
+                    return p === page ||
+                           p === page - 1 ||
+                           p === page - 2 ||
+                           p === page + 1 ||
+                           p === page + 2;
+                  })
+                  .map(p => (
+                    <button
+                      key={p}
+                      onClick={() => handlePageChange(p)}
+                      className={`px-4 py-2 rounded-lg border transition ${
+                        p === page
+                          ? 'bg-primary-600 text-white border-primary-600'
+                          : 'border-gray-300 bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                
+                {/* Última página */}
+                {page < totalPages - 2 && (
+                  <>
+                    {page < totalPages - 3 && <span className="px-2 py-2">...</span>}
+                    <button
+                      onClick={() => handlePageChange(totalPages)}
+                      className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition"
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+              </div>
+              
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Siguiente
               </button>
