@@ -104,9 +104,7 @@ function ProductosContent() {
       {!loading && (
         <div className="text-center mb-6">
           <span className="text-lg text-gray-700 font-medium">
-            {totalProductos === 0 ? (
-              'No se encontraron productos'
-            ) : totalProductos === 1 ? (
+            {totalProductos === 1 ? (
               '1 producto disponible'
             ) : (
               `${totalProductos} productos disponibles`

@@ -344,9 +344,7 @@ export default function AdminProductosPage() {
             {/* Contador de resultados */}
             {!loading && (
               <span className="text-sm text-gray-600">
-                {totalProductos === 0 ? (
-                  'No se encontraron productos'
-                ) : totalProductos === 1 ? (
+                {totalProductos === 1 ? (
                   '1 producto encontrado'
                 ) : (
                   `${totalProductos} productos encontrados`
