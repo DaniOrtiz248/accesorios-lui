@@ -16,8 +16,9 @@ export async function GET(
     await connectDB();
     
     const producto = await Producto.findById(params.id)
-      .populate('categoria', 'nombre slug')
-      .populate('material', 'nombre');
+      .populate('categoria', 'nombre slug');
+    
+    console.log('⚠️ [API] Material populate deshabilitado - producto usa material como String');
     
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
@@ -58,8 +59,8 @@ export async function PUT(
       params.id,
       body,
       { new: true, runValidators: true }
-    ).populate('categoria', 'nombre slug')
-     .populate('material', 'nombre');
+    ).populate('categoria', 'nombre slug');
+    console.log('⚠️ [API] Material populate deshabilitado en PUT');
     console.log('✅ Producto actualizado:', producto?._id);
     console.log('🖼️ Imágenes guardadas en DB:', producto?.imagenes);
     
