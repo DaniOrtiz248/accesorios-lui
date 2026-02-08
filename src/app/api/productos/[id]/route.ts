@@ -47,12 +47,39 @@ export async function PUT(
     console.log('📦 Body recibido en PUT:', JSON.stringify(body, null, 2));
     console.log('🖼️ Imágenes originales:', body.imagenes);
     
+    // Obtener producto actual para comparar imágenes
+    const productoActual = await Producto.findById(params.id);
+    
+    if (!productoActual) {
+      return errorResponse('Producto no encontrado', 404);
+    }
+    
     // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
     if (body.imagenes && Array.isArray(body.imagenes)) {
       const imagenesAntes = [...body.imagenes];
       body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
       console.log('🧹 Imágenes antes del filtro:', imagenesAntes);
       console.log('✅ Imágenes después del filtro:', body.imagenes);
+      
+      // Identificar imágenes que se eliminaron
+      const imagenesActuales = productoActual.imagenes || [];
+      const imagenesNuevas = body.imagenes || [];
+      const imagenesAEliminar = imagenesActuales.filter(
+        (imgActual: string) => !imagenesNuevas.includes(imgActual)
+      );
+      
+      // Eliminar imágenes viejas de Cloudinary
+      if (imagenesAEliminar.length > 0) {
+        console.log('🗑️ Eliminando imágenes viejas de Cloudinary:', imagenesAEliminar);
+        await Promise.all(
+          imagenesAEliminar.map((url: string) => 
+            deleteImage(url).catch((err) => {
+              console.error('Error al eliminar imagen:', url, err);
+            })
+          )
+        );
+        console.log('✅ Imágenes viejas eliminadas');
+      }
     } else {
       console.log('⚠️ No hay array de imágenes o no es un array');
     }
