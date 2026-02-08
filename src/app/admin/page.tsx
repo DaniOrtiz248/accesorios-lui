@@ -111,7 +111,7 @@ export default function AdminDashboard() {
 
         {/* Quick Stats (opcional para futuro) */}
         <div className="mt-12 text-center text-gray-500">
-          <p>Sistema de gestión para Accesorios LUI</p>
+          <p>Sistema de gestión para <span className="font-medium text-primary-700">Luisa Ramirez Accesorios</span></p>
         </div>
       </main>
     </div>

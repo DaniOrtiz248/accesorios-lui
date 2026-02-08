@@ -38,11 +38,14 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-400 via-accent to-primary-600 text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-            Bienvenido a Accesorios LUI
+          <h1 className="text-5xl md:text-7xl font-bold mb-3 drop-shadow-lg tracking-wide">
+            Luisa Ramirez
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto drop-shadow">
-            Los mejores accesorios para complementar tu estilo. Calidad y elegancia al mejor precio.
+          <p className="text-2xl md:text-3xl mb-6 font-light italic drop-shadow-md">
+            Accesorios
+          </p>
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow">
+            Elegancia y estilo que complementan tu personalidad. Cada pieza cuenta una historia de calidad y sofisticación.
           </p>
           <Link
             href="/productos"
