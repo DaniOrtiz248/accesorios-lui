@@ -12,6 +12,7 @@ interface Categoria {
   descripcion?: string;
   slug: string;
   activo: boolean;
+  productosCount?: number;
 }
 
 export default function AdminCategoriasPage() {
@@ -36,7 +37,7 @@ export default function AdminCategoriasPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await fetch('/api/categorias');
+      const res = await fetch('/api/categorias?includeInactive=true&includeCount=true');
       const data = await res.json();
       if (data.success) {
         setCategorias(data.data);
@@ -227,9 +228,8 @@ export default function AdminCategoriasPage() {
                       <h3 className="text-xl font-bold text-gray-800 mb-1">
                         {categoria.nombre}
                       </h3>
-                      <p className="text-sm text-gray-500 mb-2">/{categoria.slug}</p>
                       {categoria.descripcion && (
-                        <p className="text-gray-600 text-sm">{categoria.descripcion}</p>
+                        <p className="text-gray-600 text-sm mt-2">{categoria.descripcion}</p>
                       )}
                     </div>
                     <div className="flex space-x-2">
@@ -250,15 +250,12 @@ export default function AdminCategoriasPage() {
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                        categoria.activo
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {categoria.activo ? 'Activa' : 'Inactiva'}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-600">Productos:</span>
+                      <span className="inline-block px-3 py-1 rounded-full text-sm font-bold bg-accent-light text-primary-900">
+                        {categoria.productosCount || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}

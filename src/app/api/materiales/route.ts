@@ -1,14 +1,31 @@
 import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Material from '@/models/Material';
+import Producto from '@/models/Producto';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
 
-// GET: Obtener todos los materiales (público)
-export async function GET() {
+// GET: Obtener todos los materiales (público) con conteo opcional
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const materiales = await Material.find().sort({ nombre: 1 });
+    
+    const { searchParams } = new URL(request.url);
+    const includeCount = searchParams.get('includeCount');
+    
+    const materiales = await Material.find().sort({ nombre: 1 }).lean();
+    
+    // Si se solicita incluir conteo de productos
+    if (includeCount) {
+      const materialesConConteo = await Promise.all(
+        materiales.map(async (mat) => {
+          const count = await Producto.countDocuments({ material: mat._id });
+          return { ...mat, productosCount: count };
+        })
+      );
+      return successResponse(materialesConConteo);
+    }
+    
     return successResponse(materiales);
   } catch (error: any) {
     console.error('Error al obtener materiales:', error);
