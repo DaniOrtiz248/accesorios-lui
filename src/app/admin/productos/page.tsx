@@ -108,7 +108,6 @@ export default function AdminProductosPage() {
   };
 
   const fetchProductos = async () => {
-    console.log('📋 [ADMIN] Iniciando fetchProductos v2.0...');
     try {
       const params = new URLSearchParams({
         page: paginaActual.toString(),
@@ -123,14 +122,8 @@ export default function AdminProductosPage() {
       if (precioMax) params.append('precioMax', precioMax);
 
       const res = await fetch(`/api/productos?${params.toString()}`);
-      console.log('📥 [ADMIN] Respuesta recibida:', { status: res.status, ok: res.ok });
       
       const data = await res.json();
-      console.log('📦 [ADMIN] Datos parseados:', {
-        success: data.success,
-        productosCount: data.data?.productos?.length,
-        total: data.data?.pagination?.total
-      });
       
       if (data.success) {
         const productosRaw = data.data.productos;
@@ -160,16 +153,12 @@ export default function AdminProductosPage() {
             : { nombre: 'Sin categoría' }
         }));
         
-        console.log('✅ [ADMIN] Seteando productos transformados:', productosTransformados.length);
         setProductos(productosTransformados);
-      } else {
-        console.error('⚠️ [ADMIN] Success = false:', data);
       }
     } catch (error) {
-      console.error('❌ [ADMIN] Error al cargar productos:', error);
+      console.error('Error al cargar productos:', error);
     } finally {
       setLoading(false);
-      console.log('✅ [ADMIN] Loading finalizado');
     }
   };
 

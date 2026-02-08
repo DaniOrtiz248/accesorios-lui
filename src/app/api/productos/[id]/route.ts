@@ -6,6 +6,7 @@ import Material from '@/models/Material';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
 import { deleteImage } from '@/lib/cloudinary';
+import { sanitizeObject, isValidObjectId, limitArrayLength, validateTextInput, sanitizeNumber } from '@/lib/security';
 
 // GET: Obtener producto por ID (público)
 export async function GET(
@@ -13,6 +14,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Validar ObjectId
+    if (!isValidObjectId(params.id)) {
+      return errorResponse('ID de producto inválido', 400);
+    }
+    
     await connectDB();
     // Force model registration for serverless cold starts
     Categoria; Material;
@@ -39,13 +45,42 @@ export async function PUT(
 ) {
   try {
     verifyAuth(request);
+    
+    // Validar ObjectId
+    if (!isValidObjectId(params.id)) {
+      return errorResponse('ID de producto inválido', 400);
+    }
+    
     await connectDB();
     // Force model registration for serverless cold starts
     Categoria; Material;
     
-    const body = await request.json();
-    console.log('📦 Body recibido en PUT:', JSON.stringify(body, null, 2));
-    console.log('🖼️ Imágenes originales:', body.imagenes);
+    let body = await request.json();
+    
+    // Sanitizar datos de entrada
+    body = sanitizeObject(body);
+    
+    // Validar campos requeridos
+    if (body.nombre && !validateTextInput(body.nombre, 2, 100)) {
+      return errorResponse('Nombre inválido', 400);
+    }
+    
+    if (body.precio !== undefined) {
+      const precioValidado = sanitizeNumber(body.precio);
+      if (precioValidado === undefined || precioValidado <= 0) {
+        return errorResponse('Precio inválido', 400);
+      }
+      body.precio = precioValidado;
+    }
+    
+    // Validar ObjectIds
+    if (body.categoria && !isValidObjectId(body.categoria)) {
+      return errorResponse('ID de categoría inválido', 400);
+    }
+    
+    if (body.material && !isValidObjectId(body.material)) {
+      return errorResponse('ID de material inválido', 400);
+    }
     
     // Obtener producto actual para comparar imágenes
     const productoActual = await Producto.findById(params.id);
@@ -54,12 +89,14 @@ export async function PUT(
       return errorResponse('Producto no encontrado', 404);
     }
     
-    // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
+    // Limpiar y limitar array de imágenes
     if (body.imagenes && Array.isArray(body.imagenes)) {
-      const imagenesAntes = [...body.imagenes];
-      body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
-      console.log('🧹 Imágenes antes del filtro:', imagenesAntes);
-      console.log('✅ Imágenes después del filtro:', body.imagenes);
+      body.imagenes = limitArrayLength(
+        body.imagenes.filter((img: any) => 
+          img && typeof img === 'string' && img.trim() !== '' && img.startsWith('http')
+        ),
+        10
+      );
       
       // Identificar imágenes que se eliminaron
       const imagenesActuales = productoActual.imagenes || [];
@@ -70,29 +107,22 @@ export async function PUT(
       
       // Eliminar imágenes viejas de Cloudinary
       if (imagenesAEliminar.length > 0) {
-        console.log('🗑️ Eliminando imágenes viejas de Cloudinary:', imagenesAEliminar);
         await Promise.all(
           imagenesAEliminar.map((url: string) => 
             deleteImage(url).catch((err) => {
-              console.error('Error al eliminar imagen:', url, err);
+              console.error('Error al eliminar imagen:', err);
             })
           )
         );
-        console.log('✅ Imágenes viejas eliminadas');
       }
-    } else {
-      console.log('⚠️ No hay array de imágenes o no es un array');
     }
     
-    console.log('💾 Actualizando producto', params.id, 'con data:', JSON.stringify(body, null, 2));
     const producto = await Producto.findByIdAndUpdate(
       params.id,
       body,
       { new: true, runValidators: true }
     ).populate('categoria', 'nombre slug')
      .populate('material', 'nombre');
-    console.log('✅ Producto actualizado:', producto?._id);
-    console.log('🖼️ Imágenes guardadas en DB:', producto?.imagenes);
     
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
@@ -115,6 +145,12 @@ export async function DELETE(
 ) {
   try {
     verifyAuth(request);
+    
+    // Validar ObjectId
+    if (!isValidObjectId(params.id)) {
+      return errorResponse('ID de producto inválido', 400);
+    }
+    
     await connectDB();
     // Force model registration for serverless cold starts
     Categoria; Material;
