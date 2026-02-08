@@ -50,6 +50,10 @@ export default function AdminProductosPage() {
   const [precioMax, setPrecioMax] = useState('');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [materiales, setMateriales] = useState<Material[]>([]);
+  const [totalProductos, setTotalProductos] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const productosPorPagina = 20;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -66,11 +70,18 @@ export default function AdminProductosPage() {
     if (!isAuthenticated) return;
     
     const timeoutId = setTimeout(() => {
+      setPaginaActual(1); // Reset página al cambiar filtros
       fetchProductos();
     }, busqueda ? 500 : 0);
 
     return () => clearTimeout(timeoutId);
   }, [busqueda, categoria, material, precioMin, precioMax]);
+
+  // Refetch cuando cambia la página
+  useEffect(() => {
+    if (!isAuthenticated || !categorias.length) return;
+    fetchProductos();
+  }, [paginaActual]);
 
   const fetchCategorias = async () => {
     try {
@@ -100,7 +111,8 @@ export default function AdminProductosPage() {
     console.log('📋 [ADMIN] Iniciando fetchProductos v2.0...');
     try {
       const params = new URLSearchParams({
-        limit: '100',
+        page: paginaActual.toString(),
+        limit: productosPorPagina.toString(),
         includeInactive: 'true',
       });
 
@@ -116,11 +128,18 @@ export default function AdminProductosPage() {
       const data = await res.json();
       console.log('📦 [ADMIN] Datos parseados:', {
         success: data.success,
-        productosCount: data.data?.productos?.length
+        productosCount: data.data?.productos?.length,
+        total: data.data?.pagination?.total
       });
       
       if (data.success) {
         const productosRaw = data.data.productos;
+        
+        // Guardar información de paginación
+        if (data.data.pagination) {
+          setTotalProductos(data.data.pagination.total);
+          setTotalPaginas(data.data.pagination.pages);
+        }
         
         // Transformar productos para asegurar que material y categoria sean seguros
         const productosTransformados = productosRaw.map((p: any) => ({
@@ -204,6 +223,12 @@ export default function AdminProductosPage() {
     setMaterial('');
     setPrecioMin('');
     setPrecioMax('');
+    setPaginaActual(1);
+  };
+
+  const handlePageChange = (nuevaPagina: number) => {
+    setPaginaActual(nuevaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isLoading) {
@@ -308,12 +333,27 @@ export default function AdminProductosPage() {
           </div>
 
           {/* Botón Limpiar Filtros */}
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 text-sm text-primary-700 hover:text-primary-900 font-medium"
-          >
-            Limpiar filtros
-          </button>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-2 text-sm text-primary-700 hover:text-primary-900 font-medium"
+            >
+              Limpiar filtros
+            </button>
+            
+            {/* Contador de resultados */}
+            {!loading && (
+              <span className="text-sm text-gray-600">
+                {totalProductos === 0 ? (
+                  'No se encontraron productos'
+                ) : totalProductos === 1 ? (
+                  '1 producto encontrado'
+                ) : (
+                  `${totalProductos} productos encontrados`
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Grid de productos */}
@@ -401,6 +441,78 @@ export default function AdminProductosPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Paginación */}
+        {!loading && totalPaginas > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              onClick={() => handlePageChange(paginaActual - 1)}
+              disabled={paginaActual === 1}
+              className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Anterior
+            </button>
+            
+            <div className="flex gap-2">
+              {/* Primera página */}
+              {paginaActual > 3 && (
+                <>
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition"
+                  >
+                    1
+                  </button>
+                  {paginaActual > 4 && <span className="px-2 py-2">...</span>}
+                </>
+              )}
+              
+              {/* Páginas cercanas */}
+              {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                .filter(page => {
+                  return page === paginaActual ||
+                         page === paginaActual - 1 ||
+                         page === paginaActual - 2 ||
+                         page === paginaActual + 1 ||
+                         page === paginaActual + 2;
+                })
+                .map(page => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-4 py-2 rounded-lg border transition ${
+                      page === paginaActual
+                        ? 'bg-primary-600 text-white border-primary-600'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              
+              {/* Última página */}
+              {paginaActual < totalPaginas - 2 && (
+                <>
+                  {paginaActual < totalPaginas - 3 && <span className="px-2 py-2">...</span>}
+                  <button
+                    onClick={() => handlePageChange(totalPaginas)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition"
+                  >
+                    {totalPaginas}
+                  </button>
+                </>
+              )}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(paginaActual + 1)}
+              disabled={paginaActual === totalPaginas}
+              className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Siguiente
+            </button>
           </div>
         )}
       </main>
