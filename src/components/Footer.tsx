@@ -10,9 +10,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Accesorios LUI</h3>
+            <h3 className="text-2xl font-bold mb-2 tracking-wide">Luisa Ramirez</h3>
+            <p className="text-sm text-primary-300 mb-3 font-light italic">Accesorios</p>
             <p className="text-primary-100">
-              Los mejores accesorios para ti. Anillos, collares, pulseras, bolsos y más.
+              Elegancia y estilo en cada pieza. Anillos, collares, pulseras, bolsos y más.
             </p>
           </div>
 
@@ -70,7 +71,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-primary-700 mt-8 pt-6 text-center text-primary-200">
-          <p>&copy; {new Date().getFullYear()} Accesorios LUI. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Luisa Ramirez Accesorios. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

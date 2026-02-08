@@ -13,9 +13,12 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-3">
             <FiShoppingBag className="text-primary-400 text-2xl" />
-            <span className="text-xl font-bold text-primary-900">Accesorios LUI</span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-lg md:text-xl font-bold text-primary-900 tracking-wide">Luisa Ramirez</span>
+              <span className="text-xs md:text-sm font-light text-primary-600 -mt-1">Accesorios</span>
+            </div>
           </Link>
 
           {/* Desktop Menu */}

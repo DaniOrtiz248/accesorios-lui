@@ -7,9 +7,9 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Accesorios LUI - Los mejores accesorios para ti',
-  description: 'Encuentra anillos, collares, pulseras, bolsos y más. Los mejores accesorios al mejor precio.',
-  keywords: 'accesorios, anillos, collares, pulseras, bolsos, billeteras, relojes',
+  title: 'Luisa Ramirez Accesorios - Elegancia y Estilo',
+  description: 'Descubre una colección exclusiva de anillos, collares, pulseras, bolsos y más. Elegancia, calidad y estilo en cada pieza.',
+  keywords: 'luisa ramirez, accesorios, anillos, collares, pulseras, bolsos, billeteras, relojes, elegancia, moda',
 };
 
 export default function RootLayout({

@@ -32,8 +32,9 @@ export default function LoginPage() {
           <div className="inline-block p-3 bg-accent-light rounded-full mb-4">
             <FiShoppingBag className="text-4xl text-primary-800" />
           </div>
-          <h1 className="text-3xl font-bold text-primary-900">Accesorios LUI</h1>
-          <p className="text-primary-700 mt-2 font-medium">Panel de Administración</p>
+          <h1 className="text-3xl font-bold text-primary-900 tracking-wide">Luisa Ramirez</h1>
+          <p className="text-lg text-primary-600 font-light italic">Accesorios</p>
+          <p className="text-primary-700 mt-3 font-medium text-sm">Panel de Administración</p>
         </div>
 
         {error && (
