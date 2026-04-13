@@ -25,3 +25,13 @@
     @apply bg-white border border-primary-100 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
   }
 }
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

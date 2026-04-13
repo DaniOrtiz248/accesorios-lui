@@ -1,32 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiShoppingBag, FiTrendingUp, FiHeart } from 'react-icons/fi';
+import { FiShoppingBag, FiTrendingUp, FiHeart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 interface Categoria {
   _id: string;
   nombre: string;
   slug: string;
+  imagen?: string;
   activo: boolean;
 }
-
-// Paleta de colores pastel para las tarjetas de categorías
-const CARD_PALETTES = [
-  { bg: 'bg-pink-50',   border: 'border-pink-200',   text: 'text-pink-700',   circle: 'bg-pink-100'   },
-  { bg: 'bg-amber-50',  border: 'border-amber-200',  text: 'text-amber-700',  circle: 'bg-amber-100'  },
-  { bg: 'bg-emerald-50',border: 'border-emerald-200',text: 'text-emerald-700',circle: 'bg-emerald-100'},
-  { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', circle: 'bg-violet-100' },
-  { bg: 'bg-sky-50',    border: 'border-sky-200',    text: 'text-sky-700',    circle: 'bg-sky-100'    },
-  { bg: 'bg-rose-50',   border: 'border-rose-200',   text: 'text-rose-700',   circle: 'bg-rose-100'   },
-  { bg: 'bg-lime-50',   border: 'border-lime-200',   text: 'text-lime-700',   circle: 'bg-lime-100'   },
-  { bg: 'bg-cyan-50',   border: 'border-cyan-200',   text: 'text-cyan-700',   circle: 'bg-cyan-100'   },
-];
 
 export default function Home() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCategorias();
@@ -46,13 +36,13 @@ export default function Home() {
     }
   };
 
-  // Obtener iniciales para mostrar en la tarjeta
-  const getInitials = (nombre: string) => {
-    return nombre
-      .split(' ')
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? '')
-      .join('');
+  const getInitials = (nombre: string) =>
+    nombre.split(' ').slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
+
+  const scrollCarousel = (dir: 'prev' | 'next') => {
+    if (!carouselRef.current) return;
+    const amount = carouselRef.current.offsetWidth * 0.75;
+    carouselRef.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
   };
 
   return (
@@ -127,37 +117,63 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Scroll horizontal en móvil, grid en desktop */}
-            <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:overflow-visible sm:pb-0 scrollbar-hide">
-              {categorias.map((cat, i) => {
-                const palette = CARD_PALETTES[i % CARD_PALETTES.length];
-                const initials = getInitials(cat.nombre);
-                return (
+            {/* Carrusel de categorías */}
+            <div className="relative">
+              {/* Botón anterior */}
+              <button
+                onClick={() => scrollCarousel('prev')}
+                className="hidden sm:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-md rounded-full items-center justify-center text-primary-700 hover:bg-primary-50 transition"
+                aria-label="Anterior"
+              >
+                <FiChevronLeft className="text-xl" />
+              </button>
+
+              {/* Track del carrusel */}
+              <div
+                ref={carouselRef}
+                className="flex gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
+              >
+                {categorias.map((cat) => (
                   <Link
                     key={cat._id}
                     href={`/productos?categoria=${cat._id}`}
-                    className={`group flex-shrink-0 w-36 sm:w-auto flex flex-col items-center p-5 rounded-2xl border ${
-                      palette.bg
-                    } ${
-                      palette.border
-                    } hover:shadow-lg hover:-translate-y-1 transition-all duration-200`}
+                    className="group flex-shrink-0 w-40 sm:w-48"
                   >
-                    {/* Círculo con iniciales */}
-                    <div
-                      className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 ${
-                        palette.circle
-                      } group-hover:scale-110 transition-transform duration-200`}
-                    >
-                      <span className={`text-2xl font-bold ${palette.text}`}>
-                        {initials}
-                      </span>
+                    <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-200">
+                      {cat.imagen ? (
+                        <Image
+                          src={cat.imagen}
+                          alt={cat.nombre}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <span className="text-4xl font-bold text-primary-300">
+                            {getInitials(cat.nombre)}
+                          </span>
+                        </div>
+                      )}
+                      {/* Overlay degradado */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <h3 className="text-white font-semibold text-sm leading-tight">
+                          {cat.nombre}
+                        </h3>
+                      </div>
                     </div>
-                    <h3 className={`text-sm font-semibold text-center leading-tight ${palette.text}`}>
-                      {cat.nombre}
-                    </h3>
                   </Link>
-                );
-              })}
+                ))}
+              </div>
+
+              {/* Botón siguiente */}
+              <button
+                onClick={() => scrollCarousel('next')}
+                className="hidden sm:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-md rounded-full items-center justify-center text-primary-700 hover:bg-primary-50 transition"
+                aria-label="Siguiente"
+              >
+                <FiChevronRight className="text-xl" />
+              </button>
             </div>
           </div>
         </section>
