@@ -312,6 +312,8 @@ export default function ProductoFormPage() {
         body: JSON.stringify(dataToSend),
       });
 
+      const data = await res.json();
+
       if (data.success) {
         router.push('/admin/productos');
       } else {
