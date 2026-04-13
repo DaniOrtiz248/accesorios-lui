@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-background-light text-primary-900;
+  html, body {
+    @apply bg-background-light text-primary-900 overflow-x-hidden;
   }
 }
 
