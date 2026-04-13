@@ -45,7 +45,7 @@ function ProductosContent() {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '12',
+        limit: '16',
       });
 
       // Agregar filtros, manejar arrays (subcategoria puede ser string[] o string)
