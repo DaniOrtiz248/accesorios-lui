@@ -73,7 +73,7 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
       if (precioMin) filters.precioMin = precioMin;
       if (precioMax) filters.precioMax = precioMax;
       onFilterChange(filters);
-    }, busqueda ? 500 : 0);
+    }, (busqueda || precioMin || precioMax) ? 500 : 0);
 
     return () => clearTimeout(timeoutId);
   }, [busqueda, categoria, subcategoriasSeleccionadas, precioMin, precioMax]);
@@ -130,7 +130,13 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
           <input
             type="number"
             value={precioMin}
-            onChange={(e) => setPrecioMin(e.target.value)}
+            min="0"
+            max="1000000"
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === '' || (Number(v) >= 0 && Number(v) <= 1000000)) setPrecioMin(v);
+            }}
+            onKeyDown={(e) => ['e', 'E', '-', '+'].includes(e.key) && e.preventDefault()}
             placeholder="$0"
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent text-sm"
           />
@@ -142,7 +148,13 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
           <input
             type="number"
             value={precioMax}
-            onChange={(e) => setPrecioMax(e.target.value)}
+            min="0"
+            max="1000000"
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === '' || (Number(v) >= 0 && Number(v) <= 1000000)) setPrecioMax(v);
+            }}
+            onKeyDown={(e) => ['e', 'E', '-', '+'].includes(e.key) && e.preventDefault()}
             placeholder="Sin límite"
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent text-sm"
           />

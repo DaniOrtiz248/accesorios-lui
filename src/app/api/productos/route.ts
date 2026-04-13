@@ -56,12 +56,19 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    if (precioMin || precioMax) {
-      filtros.precio = {};
+    if (precioMin) {
       const minSanitizado = sanitizeNumber(precioMin);
+      if (minSanitizado !== undefined) {
+        filtros.precio = filtros.precio || {};
+        filtros.precio.$gte = minSanitizado;
+      }
+    }
+    if (precioMax) {
       const maxSanitizado = sanitizeNumber(precioMax);
-      if (minSanitizado !== undefined) filtros.precio.$gte = minSanitizado;
-      if (maxSanitizado !== undefined) filtros.precio.$lte = maxSanitizado;
+      if (maxSanitizado !== undefined) {
+        filtros.precio = filtros.precio || {};
+        filtros.precio.$lte = maxSanitizado;
+      }
     }
     
     // Paginación con límites de seguridad
