@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_super_seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('Por favor define la variable JWT_SECRET en las variables de entorno');
+}
 
 export interface JWTPayload {
   userId: string;

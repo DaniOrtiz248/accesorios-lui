@@ -4,7 +4,7 @@ export interface IProducto extends Document {
   nombre: string;
   descripcion: string;
   precio: number;
-  material: mongoose.Types.ObjectId | string; // Soporta ambos durante la migración
+  material: mongoose.Types.ObjectId;
   categoria: mongoose.Types.ObjectId;
   imagenes: string[];
   activo: boolean;
@@ -31,7 +31,7 @@ const ProductoSchema: Schema = new Schema(
       min: [0, 'El precio no puede ser negativo'],
     },
     material: {
-      type: Schema.Types.Mixed, // Permite String o ObjectId durante la migración
+      type: Schema.Types.ObjectId,
       ref: 'Material',
       required: [true, 'El material es requerido'],
     },
