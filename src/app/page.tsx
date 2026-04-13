@@ -131,15 +131,16 @@ export default function Home() {
               {/* Track del carrusel */}
               <div
                 ref={carouselRef}
-                className="flex gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
+                className="flex gap-6 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
               >
                 {categorias.map((cat) => (
                   <Link
                     key={cat._id}
                     href={`/productos?categoria=${cat._id}`}
-                    className="group flex-shrink-0 w-40 sm:w-48"
+                    className="group flex-shrink-0 flex flex-col items-center gap-3 w-28"
                   >
-                    <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-200">
+                    {/* Círculo */}
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-200 ring-2 ring-primary-100 group-hover:ring-primary-300">
                       {cat.imagen ? (
                         <Image
                           src={cat.imagen}
@@ -148,20 +149,17 @@ export default function Home() {
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <span className="text-4xl font-bold text-primary-300">
+                        <div className="flex items-center justify-center h-full w-full">
+                          <span className="text-3xl font-bold text-primary-400">
                             {getInitials(cat.nombre)}
                           </span>
                         </div>
                       )}
-                      {/* Overlay degradado */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <h3 className="text-white font-semibold text-sm leading-tight">
-                          {cat.nombre}
-                        </h3>
-                      </div>
                     </div>
+                    {/* Nombre debajo */}
+                    <h3 className="text-xs font-semibold text-center text-primary-800 leading-tight line-clamp-2">
+                      {cat.nombre}
+                    </h3>
                   </Link>
                 ))}
               </div>

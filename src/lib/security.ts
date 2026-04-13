@@ -19,6 +19,7 @@ export function sanitizeString(input: string): string {
  * Sanitiza números para evitar valores inválidos
  */
 export function sanitizeNumber(input: any): number | undefined {
+  if (input === null || input === undefined || input === '') return undefined;
   const num = Number(input);
   if (isNaN(num) || !isFinite(num)) return undefined;
   if (num < 0 || num > 999999999) return undefined; // Rango razonable
