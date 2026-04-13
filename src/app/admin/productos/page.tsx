@@ -43,6 +43,8 @@ export default function AdminProductosPage() {
   const [precioMin, setPrecioMin] = useState('');
   const [precioMax, setPrecioMax] = useState('');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [subcategorias, setSubcategorias] = useState<{ _id: string; nombre: string }[]>([]);
+  const [subcategoria, setSubcategoria] = useState('');
   const [totalProductos, setTotalProductos] = useState(0);
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -67,7 +69,7 @@ export default function AdminProductosPage() {
     }, busqueda ? 500 : 0);
 
     return () => clearTimeout(timeoutId);
-  }, [busqueda, categoria, precioMin, precioMax]);
+  }, [busqueda, categoria, subcategoria, precioMin, precioMax]);
 
   // Refetch cuando cambia la página
   useEffect(() => {
@@ -79,11 +81,25 @@ export default function AdminProductosPage() {
     try {
       const res = await fetch('/api/categorias?includeInactive=true');
       const data = await res.json();
-      if (data.success) {
-        setCategorias(data.data);
-      }
+      if (data.success) setCategorias(data.data);
     } catch (error) {
       console.error('Error al cargar categorías:', error);
+    }
+  };
+
+  const fetchSubcategorias = async (categoriaId: string) => {
+    if (!categoriaId) {
+      setSubcategorias([]);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/subcategorias?categoria=${categoriaId}&includeInactive=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) setSubcategorias(data.data);
+    } catch (error) {
+      console.error('Error al cargar subcategorías:', error);
     }
   };
 
@@ -97,6 +113,7 @@ export default function AdminProductosPage() {
 
       if (busqueda) params.append('busqueda', busqueda);
       if (categoria) params.append('categoria', categoria);
+      if (subcategoria) params.append('subcategoria', subcategoria);
       if (precioMin) params.append('precioMin', precioMin);
       if (precioMax) params.append('precioMax', precioMax);
 
@@ -183,6 +200,8 @@ export default function AdminProductosPage() {
   const handleClearFilters = () => {
     setBusqueda('');
     setCategoria('');
+    setSubcategoria('');
+    setSubcategorias([]);
     setPrecioMin('');
     setPrecioMax('');
     setPaginaActual(1);
@@ -234,7 +253,7 @@ export default function AdminProductosPage() {
       <main className="container mx-auto px-4 py-8">
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             {/* Búsqueda */}
             <div className="relative">
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
@@ -250,13 +269,33 @@ export default function AdminProductosPage() {
             {/* Categoría */}
             <select
               value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
+              onChange={(e) => {
+                const nuevaCat = e.target.value;
+                setCategoria(nuevaCat);
+                setSubcategoria('');
+                fetchSubcategorias(nuevaCat);
+              }}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">Todas las categorías</option>
               {categorias.map((cat) => (
                 <option key={cat._id} value={cat._id}>
                   {cat.nombre}
+                </option>
+              ))}
+            </select>
+
+            {/* Subcategoría */}
+            <select
+              value={subcategoria}
+              onChange={(e) => setSubcategoria(e.target.value)}
+              disabled={!categoria || subcategorias.length === 0}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+            >
+              <option value="">{!categoria ? 'Selecciona categoría' : 'Todas las subcategorías'}</option>
+              {subcategorias.map((sub) => (
+                <option key={sub._id} value={sub._id}>
+                  {sub.nombre}
                 </option>
               ))}
             </select>
