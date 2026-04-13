@@ -108,7 +108,7 @@ export default function Home() {
         <section className="py-16 bg-background-light">
           <div className="container mx-auto px-4">
             <div className="flex flex-col items-center gap-3 mb-10 sm:flex-row sm:justify-between">
-              <h2 className="text-3xl font-bold text-primary-900 text-center sm:text-left">Nuestras Categorías</h2>
+              <h2 className="text-3xl font-bold text-primary-900 text-center">Nuestras Categorías</h2>
               <Link
                 href="/productos"
                 className="text-sm font-medium text-primary-600 hover:text-primary-800 transition border border-primary-200 px-5 py-2 rounded-full hover:border-primary-400"
