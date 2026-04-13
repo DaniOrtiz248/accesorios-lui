@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiPlus, FiEdit, FiTrash2, FiArrowLeft, FiTag } from 'react-icons/fi';
+import Image from 'next/image';
+import { FiPlus, FiEdit, FiTrash2, FiArrowLeft, FiTag, FiImage } from 'react-icons/fi';
 
 interface Categoria {
   _id: string;
   nombre: string;
   descripcion?: string;
+  imagen?: string;
   slug: string;
   activo: boolean;
   productosCount?: number;
@@ -22,9 +24,11 @@ export default function AdminCategoriasPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
+    imagen: '',
   });
 
   useEffect(() => {
@@ -46,6 +50,31 @@ export default function AdminCategoriasPage() {
       console.error('Error al cargar categorías:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFormData((prev) => ({ ...prev, imagen: data.data.url }));
+      } else {
+        alert(data.message || 'Error al subir imagen');
+      }
+    } catch {
+      alert('Error al subir imagen');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -85,6 +114,7 @@ export default function AdminCategoriasPage() {
     setFormData({
       nombre: categoria.nombre,
       descripcion: categoria.descripcion || '',
+      imagen: categoria.imagen || '',
     });
     setShowForm(true);
   };
@@ -115,7 +145,7 @@ export default function AdminCategoriasPage() {
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ nombre: '', descripcion: '' });
+    setFormData({ nombre: '', descripcion: '', imagen: '' });
   };
 
   if (!isAuthenticated) return null;
@@ -184,6 +214,31 @@ export default function AdminCategoriasPage() {
                       placeholder="Descripción opcional..."
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Imagen de categoría
+                    </label>
+                    {formData.imagen && (
+                      <div className="relative h-32 w-full rounded-lg overflow-hidden mb-2 bg-gray-100">
+                        <Image src={formData.imagen} alt="Vista previa" fill className="object-cover" />
+                      </div>
+                    )}
+                    <label
+                      className={`cursor-pointer flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-primary-400 transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                      <FiImage className="text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        {uploadingImage ? 'Subiendo...' : formData.imagen ? 'Cambiar imagen' : 'Subir imagen'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                  </div>
                   <div className="flex space-x-4 pt-4">
                     <button
                       type="button"
@@ -223,6 +278,11 @@ export default function AdminCategoriasPage() {
                   key={categoria._id}
                   className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
                 >
+                  {categoria.imagen && (
+                    <div className="relative h-24 w-full rounded-lg overflow-hidden mb-4">
+                      <Image src={categoria.imagen} alt={categoria.nombre} fill className="object-cover" />
+                    </div>
+                  )}
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-800 mb-1">

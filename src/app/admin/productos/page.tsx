@@ -44,7 +44,7 @@ export default function AdminProductosPage() {
   const [precioMax, setPrecioMax] = useState('');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [subcategorias, setSubcategorias] = useState<{ _id: string; nombre: string }[]>([]);
-  const [subcategoria, setSubcategoria] = useState('');
+  const [subcategoriasSeleccionadas, setSubcategoriasSeleccionadas] = useState<string[]>([]);
   const [totalProductos, setTotalProductos] = useState(0);
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -69,7 +69,7 @@ export default function AdminProductosPage() {
     }, busqueda ? 500 : 0);
 
     return () => clearTimeout(timeoutId);
-  }, [busqueda, categoria, subcategoria, precioMin, precioMax]);
+  }, [busqueda, categoria, subcategoriasSeleccionadas, precioMin, precioMax]);
 
   // Refetch cuando cambia la página
   useEffect(() => {
@@ -103,6 +103,12 @@ export default function AdminProductosPage() {
     }
   };
 
+  const toggleSubcategoria = (id: string) => {
+    setSubcategoriasSeleccionadas((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
+
   const fetchProductos = async () => {
     try {
       const params = new URLSearchParams({
@@ -113,7 +119,7 @@ export default function AdminProductosPage() {
 
       if (busqueda) params.append('busqueda', busqueda);
       if (categoria) params.append('categoria', categoria);
-      if (subcategoria) params.append('subcategoria', subcategoria);
+      subcategoriasSeleccionadas.forEach((s) => params.append('subcategoria', s));
       if (precioMin) params.append('precioMin', precioMin);
       if (precioMax) params.append('precioMax', precioMax);
 
@@ -200,7 +206,7 @@ export default function AdminProductosPage() {
   const handleClearFilters = () => {
     setBusqueda('');
     setCategoria('');
-    setSubcategoria('');
+    setSubcategoriasSeleccionadas([]);
     setSubcategorias([]);
     setPrecioMin('');
     setPrecioMax('');
@@ -253,7 +259,7 @@ export default function AdminProductosPage() {
       <main className="container mx-auto px-4 py-8">
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             {/* Búsqueda */}
             <div className="relative">
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
@@ -272,7 +278,7 @@ export default function AdminProductosPage() {
               onChange={(e) => {
                 const nuevaCat = e.target.value;
                 setCategoria(nuevaCat);
-                setSubcategoria('');
+                setSubcategoriasSeleccionadas([]);
                 fetchSubcategorias(nuevaCat);
               }}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -281,21 +287,6 @@ export default function AdminProductosPage() {
               {categorias.map((cat) => (
                 <option key={cat._id} value={cat._id}>
                   {cat.nombre}
-                </option>
-              ))}
-            </select>
-
-            {/* Subcategoría */}
-            <select
-              value={subcategoria}
-              onChange={(e) => setSubcategoria(e.target.value)}
-              disabled={!categoria || subcategorias.length === 0}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
-            >
-              <option value="">{!categoria ? 'Selecciona categoría' : 'Todas las subcategorías'}</option>
-              {subcategorias.map((sub) => (
-                <option key={sub._id} value={sub._id}>
-                  {sub.nombre}
                 </option>
               ))}
             </select>
@@ -318,6 +309,35 @@ export default function AdminProductosPage() {
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
+
+          {/* Subcategorías (multiseleción) */}
+          {categoria && subcategorias.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Filtrar por subcategoría
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {subcategorias.map((sub) => {
+                  const selected = subcategoriasSeleccionadas.includes(sub._id);
+                  return (
+                    <button
+                      key={sub._id}
+                      type="button"
+                      onClick={() => toggleSubcategoria(sub._id)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                        selected
+                          ? 'bg-primary-600 text-white border-primary-600'
+                          : 'bg-white text-gray-600 border-gray-300 hover:border-primary-400'
+                      }`}
+                    >
+                      {selected && <span className="mr-1">✓</span>}
+                      {sub.nombre}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Botón Limpiar Filtros */}
           <div className="flex items-center justify-between">

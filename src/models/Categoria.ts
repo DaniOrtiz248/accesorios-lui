@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface ICategoria extends Document {
   nombre: string;
   descripcion?: string;
+  imagen?: string;
   slug: string;
   activo: boolean;
   createdAt: Date;
@@ -21,6 +22,9 @@ const CategoriaSchema: Schema = new Schema(
     descripcion: {
       type: String,
       maxlength: [200, 'La descripción no puede exceder 200 caracteres'],
+    },
+    imagen: {
+      type: String,
     },
     slug: {
       type: String,
