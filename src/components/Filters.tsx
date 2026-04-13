@@ -134,7 +134,7 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
             max="1000000"
             onChange={(e) => {
               const v = e.target.value;
-              if (v === '' || (Number(v) >= 0 && Number(v) <= 1000000)) setPrecioMin(v);
+              if (v === '' || (Number(v) >= 0 && Number(v) <= 10000000)) setPrecioMin(v);
             }}
             onKeyDown={(e) => ['e', 'E', '-', '+'].includes(e.key) && e.preventDefault()}
             placeholder="$0"
@@ -149,10 +149,10 @@ export default function Filters({ onFilterChange, initialFilters = {} }: Filters
             type="number"
             value={precioMax}
             min="0"
-            max="1000000"
+            max="10000000"
             onChange={(e) => {
               const v = e.target.value;
-              if (v === '' || (Number(v) >= 0 && Number(v) <= 1000000)) setPrecioMax(v);
+              if (v === '' || (Number(v) >= 0 && Number(v) <= 10000000)) setPrecioMax(v);
             }}
             onKeyDown={(e) => ['e', 'E', '-', '+'].includes(e.key) && e.preventDefault()}
             placeholder="Sin límite"

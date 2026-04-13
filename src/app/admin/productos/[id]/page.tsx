@@ -486,14 +486,14 @@ export default function ProductoFormPage() {
                   value={formData.precio}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === '' || (Number(v) >= 0 && Number(v) <= 1000000)) {
+                    if (v === '' || (Number(v) >= 0 && Number(v) <= 10000000)) {
                       setFormData({ ...formData, precio: v });
                     }
                   }}
                   onKeyDown={(e) => ['e', 'E', '-', '+'].includes(e.key) && e.preventDefault()}
                   required
                   min="1"
-                  max="1000000"
+                  max="10000000"
                   step="1"
                   className="input-field"
                   placeholder="0"
