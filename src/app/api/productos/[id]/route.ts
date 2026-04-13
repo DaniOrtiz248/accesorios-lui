@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Producto from '@/models/Producto';
 import Categoria from '@/models/Categoria';
-import Material from '@/models/Material';
+import Subcategoria from '@/models/Subcategoria';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
 import { deleteImage } from '@/lib/cloudinary';
@@ -21,11 +21,11 @@ export async function GET(
     
     await connectDB();
     // Force model registration for serverless cold starts
-    Categoria; Material;
+    Categoria; Subcategoria;
     
     const producto = await Producto.findById(params.id)
       .populate('categoria', 'nombre slug')
-      .populate('material', 'nombre');
+      .populate('subcategorias', 'nombre');
     
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
@@ -53,7 +53,7 @@ export async function PUT(
     
     await connectDB();
     // Force model registration for serverless cold starts
-    Categoria; Material;
+    Categoria; Subcategoria;
     
     let body = await request.json();
     
@@ -77,9 +77,13 @@ export async function PUT(
     if (body.categoria && !isValidObjectId(body.categoria)) {
       return errorResponse('ID de categoría inválido', 400);
     }
-    
-    if (body.material && !isValidObjectId(body.material)) {
-      return errorResponse('ID de material inválido', 400);
+
+    // Validar array de subcategorias
+    if (body.subcategorias && Array.isArray(body.subcategorias)) {
+      body.subcategorias = limitArrayLength(
+        body.subcategorias.filter((id: any) => typeof id === 'string' && isValidObjectId(id)),
+        20
+      );
     }
     
     // Obtener producto actual para comparar imágenes
@@ -122,7 +126,7 @@ export async function PUT(
       body,
       { new: true, runValidators: true }
     ).populate('categoria', 'nombre slug')
-     .populate('material', 'nombre');
+     .populate('subcategorias', 'nombre');
     
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
@@ -153,7 +157,7 @@ export async function DELETE(
     
     await connectDB();
     // Force model registration for serverless cold starts
-    Categoria; Material;
+    Categoria; Subcategoria;
     
     const producto = await Producto.findById(params.id);
     

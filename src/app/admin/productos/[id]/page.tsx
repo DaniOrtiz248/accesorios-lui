@@ -12,9 +12,10 @@ interface Categoria {
   nombre: string;
 }
 
-interface Material {
+interface Subcategoria {
   _id: string;
   nombre: string;
+  categoria: { _id: string; nombre: string };
 }
 
 export default function ProductoFormPage() {
@@ -24,7 +25,7 @@ export default function ProductoFormPage() {
   const isEditing = !!params.id && params.id !== 'nuevo';
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [materiales, setMateriales] = useState<Material[]>([]);
+  const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
@@ -36,7 +37,7 @@ export default function ProductoFormPage() {
     nombre: '',
     descripcion: '',
     precio: '',
-    material: '',
+    subcategorias: [] as string[],
     categoria: '',
     imagenes: [] as string[],
     activo: true,
@@ -47,7 +48,6 @@ export default function ProductoFormPage() {
       router.push('/admin/login');
     } else if (!isLoading && isAuthenticated) {
       fetchCategorias();
-      fetchMateriales();
       if (isEditing) {
         fetchProducto();
       }
@@ -70,7 +70,9 @@ export default function ProductoFormPage() {
       if (data.success) {
         setCategorias(data.data);
         if (data.data.length > 0 && !formData.categoria) {
-          setFormData((prev) => ({ ...prev, categoria: data.data[0]._id }));
+          const primeraCat = data.data[0]._id;
+          setFormData((prev) => ({ ...prev, categoria: primeraCat }));
+          fetchSubcategorias(primeraCat);
         }
       }
     } catch (error) {
@@ -78,18 +80,17 @@ export default function ProductoFormPage() {
     }
   };
 
-  const fetchMateriales = async () => {
+  const fetchSubcategorias = async (categoriaId: string) => {
+    if (!categoriaId) {
+      setSubcategorias([]);
+      return;
+    }
     try {
-      const res = await fetch('/api/materiales');
+      const res = await fetch(`/api/subcategorias?categoria=${categoriaId}`);
       const data = await res.json();
-      if (data.success) {
-        setMateriales(data.data);
-        if (data.data.length > 0 && !formData.material) {
-          setFormData((prev) => ({ ...prev, material: data.data[0]._id }));
-        }
-      }
+      if (data.success) setSubcategorias(data.data);
     } catch (error) {
-      console.error('Error al cargar materiales:', error);
+      console.error('Error al cargar subcategorías:', error);
     }
   };
 
@@ -103,11 +104,16 @@ export default function ProductoFormPage() {
           nombre: producto.nombre,
           descripcion: producto.descripcion,
           precio: producto.precio.toString(),
-          material: producto.material?._id || producto.material,
+          subcategorias: (producto.subcategorias || []).map((s: any) =>
+            typeof s === 'object' ? s._id : s
+          ),
           categoria: producto.categoria?._id || producto.categoria,
           imagenes: producto.imagenes || [],
           activo: producto.activo,
         });
+        if (producto.categoria?._id || producto.categoria) {
+          fetchSubcategorias(producto.categoria?._id || producto.categoria);
+        }
       }
     } catch (error) {
       console.error('Error al cargar producto:', error);
@@ -293,15 +299,9 @@ export default function ProductoFormPage() {
       precio: parseFloat(formData.precio),
     };
 
-    console.log('📝 FormData antes de enviar:', formData);
-    console.log('🖼️ Imágenes en formData:', formData.imagenes);
-    console.log('📤 Data a enviar:', dataToSend);
-
     try {
       const url = isEditing ? `/api/productos/${params.id}` : '/api/productos';
       const method = isEditing ? 'PUT' : 'POST';
-
-      console.log('🚀 Enviando', method, 'a', url);
 
       const res = await fetch(url, {
         method,
@@ -311,10 +311,6 @@ export default function ProductoFormPage() {
         },
         body: JSON.stringify(dataToSend),
       });
-
-      console.log('📡 Respuesta recibida, status:', res.status);
-
-      const data = await res.json();
 
       if (data.success) {
         router.push('/admin/productos');
@@ -475,7 +471,7 @@ export default function ProductoFormPage() {
               </p>
             </div>
 
-            {/* Precio y Material */}
+            {/* Precio y Categoría */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -494,41 +490,63 @@ export default function ProductoFormPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Material *
+                  Categoría *
                 </label>
                 <select
-                  value={formData.material}
-                  onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                  value={formData.categoria}
+                  onChange={(e) => {
+                    const nuevaCat = e.target.value;
+                    setFormData({ ...formData, categoria: nuevaCat, subcategorias: [] });
+                    fetchSubcategorias(nuevaCat);
+                  }}
                   required
                   className="input-field"
                 >
-                  <option value="">Selecciona un material</option>
-                  {materiales.map((mat) => (
-                    <option key={mat._id} value={mat._id}>
-                      {mat.nombre}
-                    </option>
+                  <option value="">Selecciona una categoría</option>
+                  {categorias.map((cat) => (
+                    <option key={cat._id} value={cat._id}>{cat.nombre}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Categoría */}
+            {/* Subcategorías */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Categoría *
+                Subcategorías
+                <span className="text-gray-400 font-normal ml-2">(opcional, selecciona una o más)</span>
               </label>
-              <select
-                value={formData.categoria}
-                onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                required
-                className="input-field"
-              >
-                {categorias.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.nombre}
-                  </option>
-                ))}
-              </select>
+              {!formData.categoria ? (
+                <p className="text-sm text-gray-400 italic">Selecciona una categoría primero</p>
+              ) : subcategorias.length === 0 ? (
+                <p className="text-sm text-gray-400 italic">No hay subcategorías para esta categoría. Créalas en Subcategorías.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {subcategorias.map((sub) => (
+                    <label
+                      key={sub._id}
+                      className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition ${
+                        formData.subcategorias.includes(sub._id)
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.subcategorias.includes(sub._id)}
+                        onChange={(e) => {
+                          const subs = e.target.checked
+                            ? [...formData.subcategorias, sub._id]
+                            : formData.subcategorias.filter((id) => id !== sub._id);
+                          setFormData({ ...formData, subcategorias: subs });
+                        }}
+                        className="w-4 h-4 text-primary-600"
+                      />
+                      <span className="text-sm font-medium text-gray-700">{sub.nombre}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Activo */}

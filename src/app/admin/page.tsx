@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiPackage, FiTag, FiLogOut, FiHome, FiBox } from 'react-icons/fi';
+import { FiPackage, FiTag, FiLogOut, FiHome, FiLayers } from 'react-icons/fi';
 
 export default function AdminDashboard() {
   const { usuario, logout, isAuthenticated, isLoading } = useAuth();
@@ -92,19 +92,19 @@ export default function AdminDashboard() {
             </p>
           </Link>
 
-          {/* Materiales Card */}
+          {/* Subcategorías Card */}
           <Link
-            href="/admin/materiales"
+            href="/admin/subcategorias"
             className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
           >
             <div className="flex items-center space-x-4 mb-4">
               <div className="p-3 bg-primary-100 rounded-full">
-                <FiBox className="text-3xl text-primary-600" />
+                <FiLayers className="text-3xl text-primary-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800">Materiales</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Subcategorías</h2>
             </div>
             <p className="text-gray-600">
-              Gestiona los materiales disponibles para tus productos.
+              Gestiona las subcategorías de cada categoría para una mejor clasificación.
             </p>
           </Link>
         </div>

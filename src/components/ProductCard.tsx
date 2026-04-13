@@ -8,7 +8,7 @@ interface Producto {
   nombre: string;
   precio: number;
   imagenes: string[];
-  material: { nombre: string } | string;
+  subcategorias?: { nombre: string }[];
 }
 
 interface ProductCardProps {
@@ -43,9 +43,6 @@ export default function ProductCard({ producto }: ProductCardProps) {
               ${producto.precio.toLocaleString('es-CO')}
             </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            {typeof producto.material === 'string' ? producto.material : producto.material.nombre}
-          </p>
         </div>
       </div>
     </Link>

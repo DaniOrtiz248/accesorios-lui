@@ -20,20 +20,15 @@ interface Producto {
   _id: string;
   nombre: string;
   precio: number;
-  material: string; // Siempre string después de transformación
+  subcategorias: string[];
   imagenes: string[];
   activo: boolean;
   categoria: {
     nombre: string;
-  }; // Siempre objeto simple con solo nombre
+  };
 }
 
 interface Categoria {
-  _id: string;
-  nombre: string;
-}
-
-interface Material {
   _id: string;
   nombre: string;
 }
@@ -45,11 +40,9 @@ export default function AdminProductosPage() {
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [material, setMaterial] = useState('');
   const [precioMin, setPrecioMin] = useState('');
   const [precioMax, setPrecioMax] = useState('');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [materiales, setMateriales] = useState<Material[]>([]);
   const [totalProductos, setTotalProductos] = useState(0);
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -60,7 +53,6 @@ export default function AdminProductosPage() {
       router.push('/admin/login');
     } else if (!isLoading && isAuthenticated) {
       fetchCategorias();
-      fetchMateriales();
       fetchProductos();
     }
   }, [isAuthenticated, isLoading]);
@@ -75,7 +67,7 @@ export default function AdminProductosPage() {
     }, busqueda ? 500 : 0);
 
     return () => clearTimeout(timeoutId);
-  }, [busqueda, categoria, material, precioMin, precioMax]);
+  }, [busqueda, categoria, precioMin, precioMax]);
 
   // Refetch cuando cambia la página
   useEffect(() => {
@@ -95,18 +87,6 @@ export default function AdminProductosPage() {
     }
   };
 
-  const fetchMateriales = async () => {
-    try {
-      const res = await fetch('/api/materiales');
-      const data = await res.json();
-      if (data.success) {
-        setMateriales(data.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar materiales:', error);
-    }
-  };
-
   const fetchProductos = async () => {
     try {
       const params = new URLSearchParams({
@@ -117,7 +97,6 @@ export default function AdminProductosPage() {
 
       if (busqueda) params.append('busqueda', busqueda);
       if (categoria) params.append('categoria', categoria);
-      if (material) params.append('material', material);
       if (precioMin) params.append('precioMin', precioMin);
       if (precioMax) params.append('precioMax', precioMax);
 
@@ -134,23 +113,18 @@ export default function AdminProductosPage() {
           setTotalPaginas(data.data.pagination.pages);
         }
         
-        // Transformar productos para asegurar que material y categoria sean seguros
         const productosTransformados = productosRaw.map((p: any) => ({
           _id: p._id,
           nombre: p.nombre,
           precio: p.precio,
           imagenes: p.imagenes || [],
           activo: p.activo,
-          // Extraer solo el nombre del material
-          material: typeof p.material === 'object' && p.material !== null
-            ? p.material.nombre || 'Sin material'
-            : typeof p.material === 'string'
-            ? p.material
-            : 'Sin material',
-          // Extraer solo el nombre de la categoría
+          subcategorias: (p.subcategorias || []).map((s: any) =>
+            typeof s === 'object' ? s.nombre : s
+          ),
           categoria: typeof p.categoria === 'object' && p.categoria !== null
             ? { nombre: p.categoria.nombre || 'Sin categoría' }
-            : { nombre: 'Sin categoría' }
+            : { nombre: 'Sin categoría' },
         }));
         
         setProductos(productosTransformados);
@@ -209,7 +183,6 @@ export default function AdminProductosPage() {
   const handleClearFilters = () => {
     setBusqueda('');
     setCategoria('');
-    setMaterial('');
     setPrecioMin('');
     setPrecioMax('');
     setPaginaActual(1);
@@ -261,7 +234,7 @@ export default function AdminProductosPage() {
       <main className="container mx-auto px-4 py-8">
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             {/* Búsqueda */}
             <div className="relative">
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
@@ -284,20 +257,6 @@ export default function AdminProductosPage() {
               {categorias.map((cat) => (
                 <option key={cat._id} value={cat._id}>
                   {cat.nombre}
-                </option>
-              ))}
-            </select>
-
-            {/* Material */}
-            <select
-              value={material}
-              onChange={(e) => setMaterial(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="">Todos los materiales</option>
-              {materiales.map((mat) => (
-                <option key={mat._id} value={mat._id}>
-                  {mat.nombre}
                 </option>
               ))}
             </select>
@@ -380,9 +339,11 @@ export default function AdminProductosPage() {
                     <h3 className="font-semibold text-gray-900 text-sm line-clamp-1">
                       {producto.nombre}
                     </h3>
-                    <p className="text-xs text-gray-500 line-clamp-1">
-                      {producto.material}
-                    </p>
+                    {producto.subcategorias.length > 0 && (
+                      <p className="text-xs text-gray-500 line-clamp-1">
+                        {producto.subcategorias.join(', ')}
+                      </p>
+                    )}
                   </div>
 
                   {/* Precio y Categoría */}

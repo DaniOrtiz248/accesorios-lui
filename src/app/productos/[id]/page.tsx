@@ -11,7 +11,7 @@ interface Producto {
   nombre: string;
   descripcion: string;
   precio: number;
-  material: { nombre: string } | string;
+  subcategorias: { _id: string; nombre: string }[];
   imagenes: string[];
   categoria: {
     nombre: string;
@@ -74,7 +74,6 @@ export default function ProductoDetallePage() {
     `*${producto.nombre}*\n\n` +
     `${producto.descripcion}\n\n` +
     `💰 Precio: $${producto.precio.toLocaleString('es-CO')} COP\n` +
-    `📦 Material: ${producto.material}\n` +
     `🏷️ Categoría: ${producto.categoria?.nombre}\n\n` +
     `¿Está disponible?`
   );
@@ -165,10 +164,19 @@ export default function ProductoDetallePage() {
             <div>
               <span className="font-semibold">Categoría:</span> {producto.categoria?.nombre}
             </div>
-            <div>
-              <span className="font-semibold">Material:</span>{' '}
-              {typeof producto.material === 'string' ? producto.material : producto.material?.nombre}
-            </div>
+            {producto.subcategorias && producto.subcategorias.length > 0 && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="font-semibold">Subcategorías:</span>
+                {producto.subcategorias.map((sub) => (
+                  <span
+                    key={sub._id}
+                    className="text-sm bg-primary-100 text-primary-700 px-3 py-1 rounded-full"
+                  >
+                    {sub.nombre}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mb-8">
