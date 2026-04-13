@@ -107,11 +107,11 @@ export default function Home() {
       {!loading && categorias.length > 0 && (
         <section className="py-16 bg-background-light">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-10">
-              <h2 className="text-3xl font-bold text-primary-900">Nuestras Categorías</h2>
+            <div className="flex flex-col items-center gap-3 mb-10 sm:flex-row sm:justify-between">
+              <h2 className="text-3xl font-bold text-primary-900 text-center sm:text-left">Nuestras Categorías</h2>
               <Link
                 href="/productos"
-                className="text-sm font-medium text-primary-600 hover:text-primary-800 transition border border-primary-200 px-4 py-1.5 rounded-full hover:border-primary-400"
+                className="text-sm font-medium text-primary-600 hover:text-primary-800 transition border border-primary-200 px-5 py-2 rounded-full hover:border-primary-400"
               >
                 Ver todo
               </Link>
@@ -131,16 +131,16 @@ export default function Home() {
               {/* Track del carrusel */}
               <div
                 ref={carouselRef}
-                className="flex gap-6 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
+                className="flex gap-6 overflow-x-auto scroll-smooth pt-3 pb-3 scrollbar-hide"
               >
                 {categorias.map((cat) => (
                   <Link
                     key={cat._id}
                     href={`/productos?categoria=${cat._id}`}
-                    className="group flex-shrink-0 flex flex-col items-center gap-3 w-28"
+                    className="group flex-shrink-0 flex flex-col items-center gap-3 w-32"
                   >
                     {/* Círculo */}
-                    <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-200 ring-2 ring-primary-100 group-hover:ring-primary-300">
+                    <div className="relative w-28 h-28 rounded-full overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-200 ring-2 ring-primary-100 group-hover:ring-primary-300">
                       {cat.imagen ? (
                         <Image
                           src={cat.imagen}
