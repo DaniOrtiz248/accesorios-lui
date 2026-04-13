@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  throw new Error('Por favor define la variable JWT_SECRET en las variables de entorno');
+function getJWTSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('Por favor define la variable JWT_SECRET en las variables de entorno');
+  }
+  return secret;
 }
 
 export interface JWTPayload {
@@ -17,7 +19,7 @@ export interface JWTPayload {
  * Genera un token JWT
  */
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign(payload, getJWTSecret(), { expiresIn: '7d' });
 }
 
 /**
@@ -25,7 +27,7 @@ export function generateToken(payload: JWTPayload): string {
  */
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return jwt.verify(token, getJWTSecret()) as JWTPayload;
   } catch (error) {
     return null;
   }
