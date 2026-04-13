@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
     
     const categoria = searchParams.get('categoria');
-    const subcategoria = searchParams.get('subcategoria');
+    const subcategoriaIds = searchParams.getAll('subcategoria');
     const busqueda = searchParams.get('busqueda');
     const precioMin = searchParams.get('precioMin');
     const precioMax = searchParams.get('precioMax');
@@ -42,8 +42,11 @@ export async function GET(request: NextRequest) {
       filtros.categoria = categoria;
     }
     
-    if (subcategoria && isValidObjectId(subcategoria)) {
-      filtros.subcategorias = subcategoria;
+    const validSubs = subcategoriaIds.filter(id => isValidObjectId(id));
+    if (validSubs.length === 1) {
+      filtros.subcategorias = validSubs[0];
+    } else if (validSubs.length > 1) {
+      filtros.subcategorias = { $in: validSubs };
     }
     
     if (busqueda) {

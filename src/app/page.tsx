@@ -12,6 +12,18 @@ interface Categoria {
   activo: boolean;
 }
 
+// Paleta de colores pastel para las tarjetas de categorías
+const CARD_PALETTES = [
+  { bg: 'bg-pink-50',   border: 'border-pink-200',   text: 'text-pink-700',   circle: 'bg-pink-100'   },
+  { bg: 'bg-amber-50',  border: 'border-amber-200',  text: 'text-amber-700',  circle: 'bg-amber-100'  },
+  { bg: 'bg-emerald-50',border: 'border-emerald-200',text: 'text-emerald-700',circle: 'bg-emerald-100'},
+  { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', circle: 'bg-violet-100' },
+  { bg: 'bg-sky-50',    border: 'border-sky-200',    text: 'text-sky-700',    circle: 'bg-sky-100'    },
+  { bg: 'bg-rose-50',   border: 'border-rose-200',   text: 'text-rose-700',   circle: 'bg-rose-100'   },
+  { bg: 'bg-lime-50',   border: 'border-lime-200',   text: 'text-lime-700',   circle: 'bg-lime-100'   },
+  { bg: 'bg-cyan-50',   border: 'border-cyan-200',   text: 'text-cyan-700',   circle: 'bg-cyan-100'   },
+];
+
 export default function Home() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +45,16 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  // Obtener iniciales para mostrar en la tarjeta
+  const getInitials = (nombre: string) => {
+    return nombre
+      .split(' ')
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? '')
+      .join('');
+  };
+
   return (
     <div>
       {/* Hero Section */}
@@ -93,19 +115,49 @@ export default function Home() {
 
       {/* Categories Preview */}
       {!loading && categorias.length > 0 && (
-        <section className="py-16 bg-primary-50">
+        <section className="py-16 bg-background-light">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-primary-900">Nuestras Categorías</h2>
-            <div className="flex flex-wrap justify-center gap-6">
-              {categorias.map((cat) => (
-                <Link
-                  key={cat._id}
-                  href={`/productos?categoria=${cat._id}`}
-                  className="bg-white border border-primary-100 rounded-lg shadow-md p-6 text-center hover:shadow-xl hover:border-accent transition w-40"
-                >
-                  <h3 className="text-xl font-bold text-primary-800">{cat.nombre}</h3>
-                </Link>
-              ))}
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-3xl font-bold text-primary-900">Nuestras Categorías</h2>
+              <Link
+                href="/productos"
+                className="text-sm font-medium text-primary-600 hover:text-primary-800 transition border border-primary-200 px-4 py-1.5 rounded-full hover:border-primary-400"
+              >
+                Ver todo
+              </Link>
+            </div>
+
+            {/* Scroll horizontal en móvil, grid en desktop */}
+            <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:overflow-visible sm:pb-0 scrollbar-hide">
+              {categorias.map((cat, i) => {
+                const palette = CARD_PALETTES[i % CARD_PALETTES.length];
+                const initials = getInitials(cat.nombre);
+                return (
+                  <Link
+                    key={cat._id}
+                    href={`/productos?categoria=${cat._id}`}
+                    className={`group flex-shrink-0 w-36 sm:w-auto flex flex-col items-center p-5 rounded-2xl border ${
+                      palette.bg
+                    } ${
+                      palette.border
+                    } hover:shadow-lg hover:-translate-y-1 transition-all duration-200`}
+                  >
+                    {/* Círculo con iniciales */}
+                    <div
+                      className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 ${
+                        palette.circle
+                      } group-hover:scale-110 transition-transform duration-200`}
+                    >
+                      <span className={`text-2xl font-bold ${palette.text}`}>
+                        {initials}
+                      </span>
+                    </div>
+                    <h3 className={`text-sm font-semibold text-center leading-tight ${palette.text}`}>
+                      {cat.nombre}
+                    </h3>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
