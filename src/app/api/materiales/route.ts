@@ -4,6 +4,7 @@ import Material from '@/models/Material';
 import Producto from '@/models/Producto';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
+import { sanitizeObject } from '@/lib/security';
 
 // GET: Obtener todos los materiales (público) con conteo opcional
 export async function GET(request: NextRequest) {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     verifyAuth(request);
     await connectDB();
     
-    const body = await request.json();
+    const body = sanitizeObject(await request.json());
     const material = await Material.create(body);
     
     return successResponse(material, 'Material creado exitosamente');

@@ -20,9 +20,15 @@ export async function GET(request: NextRequest) {
     // Construir filtros con sanitización
     const filtros: any = {};
     
-    // Solo filtrar por activo si no se solicita incluir inactivos (para admin)
+    // Solo admins pueden ver productos inactivos
     const includeInactive = searchParams.get('includeInactive');
-    if (!includeInactive) {
+    if (includeInactive) {
+      try {
+        verifyAuth(request);
+      } catch {
+        filtros.activo = true;
+      }
+    } else {
       filtros.activo = true;
     }
     
@@ -88,9 +94,8 @@ export async function GET(request: NextRequest) {
     };
     return successResponse(response);
   } catch (error: any) {
-    console.error('❌ [API] ERROR al obtener productos:', error);
-    console.error('❌ [API] Stack trace:', error.stack);
-    return errorResponse('Error al obtener productos: ' + error.message, 500);
+    console.error('Error al obtener productos:', error);
+    return errorResponse('Error al obtener productos', 500);
   }
 }
 
@@ -103,23 +108,13 @@ export async function POST(request: NextRequest) {
     Categoria; Material;
     
     const body = await request.json();
-    console.log('📦 Body recibido en POST:', JSON.stringify(body, null, 2));
-    console.log('🖼️ Imágenes originales:', body.imagenes);
     
     // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
     if (body.imagenes && Array.isArray(body.imagenes)) {
-      const imagenesAntes = [...body.imagenes];
       body.imagenes = body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== '');
-      console.log('🧹 Imágenes antes del filtro:', imagenesAntes);
-      console.log('✅ Imágenes después del filtro:', body.imagenes);
-    } else {
-      console.log('⚠️ No hay array de imágenes o no es un array');
     }
     
-    console.log('💾 Creando producto con data:', JSON.stringify(body, null, 2));
     const producto = await Producto.create(body);
-    console.log('✅ Producto creado exitosamente:', producto._id);
-    console.log('🖼️ Imágenes guardadas en DB:', producto.imagenes);
     
     return successResponse(producto, 'Producto creado exitosamente');
   } catch (error: any) {

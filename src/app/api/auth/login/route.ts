@@ -4,8 +4,38 @@ import Usuario from '@/models/Usuario';
 import { generateToken } from '@/lib/auth';
 import { successResponse, errorResponse } from '@/lib/api-utils';
 
+// Rate limiting simple en memoria (se reinicia en cold starts pero protege durante sesiones activas)
+const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = loginAttempts.get(ip);
+  
+  if (!record || now - record.lastAttempt > WINDOW_MS) {
+    loginAttempts.set(ip, { count: 1, lastAttempt: now });
+    return false;
+  }
+  
+  record.count++;
+  record.lastAttempt = now;
+  
+  return record.count > MAX_ATTEMPTS;
+}
+
+function resetAttempts(ip: string): void {
+  loginAttempts.delete(ip);
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    
+    if (isRateLimited(ip)) {
+      return errorResponse('Demasiados intentos. Intenta de nuevo en 15 minutos', 429);
+    }
+    
     await connectDB();
     
     const { username, password } = await request.json();
@@ -29,6 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generar token
+    resetAttempts(ip);
     const token = generateToken({
       userId: usuario._id.toString(),
       username: usuario.username,

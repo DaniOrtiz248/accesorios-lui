@@ -4,6 +4,7 @@ import Categoria from '@/models/Categoria';
 import Producto from '@/models/Producto';
 import { verifyAuth } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
+import { sanitizeObject } from '@/lib/security';
 
 // GET: Obtener todas las categorías activas (público) o todas con conteo (admin)
 export async function GET(request: NextRequest) {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     
     await connectDB();
     
-    const body = await request.json();
+    const body = sanitizeObject(await request.json());
     const categoria = await Categoria.create(body);
     
     return successResponse(categoria, 'Categoría creada exitosamente');
