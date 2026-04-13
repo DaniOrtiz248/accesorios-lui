@@ -4,7 +4,7 @@ export interface IProducto extends Document {
   nombre: string;
   descripcion: string;
   precio: number;
-  material: mongoose.Types.ObjectId;
+  subcategorias: mongoose.Types.ObjectId[];
   categoria: mongoose.Types.ObjectId;
   imagenes: string[];
   activo: boolean;
@@ -30,10 +30,10 @@ const ProductoSchema: Schema = new Schema(
       required: [true, 'El precio es requerido'],
       min: [0, 'El precio no puede ser negativo'],
     },
-    material: {
-      type: Schema.Types.ObjectId,
-      ref: 'Material',
-      required: [true, 'El material es requerido'],
+    subcategorias: {
+      type: [Schema.Types.ObjectId],
+      ref: 'Subcategoria',
+      default: [],
     },
     categoria: {
       type: Schema.Types.ObjectId,
@@ -63,6 +63,7 @@ const ProductoSchema: Schema = new Schema(
 // Índices para búsquedas optimizadas
 ProductoSchema.index({ nombre: 'text', descripcion: 'text' });
 ProductoSchema.index({ categoria: 1, activo: 1 });
+ProductoSchema.index({ subcategorias: 1 });
 ProductoSchema.index({ precio: 1 });
 
 const Producto: Model<IProducto> =

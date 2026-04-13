@@ -36,11 +36,11 @@ export default function AdminNavbar() {
               <span>Categorías</span>
             </Link>
             <Link
-              href="/admin/materiales"
+              href="/admin/subcategorias"
               className="flex items-center space-x-2 hover:text-accent-light transition"
             >
               <FiLayers />
-              <span>Materiales</span>
+              <span>Subcategorías</span>
             </Link>
 
             <div className="flex items-center space-x-4 ml-6 pl-6 border-l border-primary-700">
@@ -85,11 +85,11 @@ export default function AdminNavbar() {
             <span>Categorías</span>
           </Link>
           <Link
-            href="/admin/materiales"
+            href="/admin/subcategorias"
             className="flex items-center space-x-1 text-sm hover:text-accent-light transition"
           >
             <FiLayers />
-            <span>Materiales</span>
+            <span>Subcategorías</span>
           </Link>
         </div>
       </div>
