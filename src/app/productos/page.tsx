@@ -46,7 +46,15 @@ function ProductosContent() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '12',
-        ...filters,
+      });
+
+      // Agregar filtros, manejar arrays (subcategoria puede ser string[] o string)
+      Object.entries(filters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => params.append(key, v));
+        } else if (value) {
+          params.append(key, value as string);
+        }
       });
 
       const res = await fetch(`/api/productos?${params}`);
