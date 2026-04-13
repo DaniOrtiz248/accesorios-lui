@@ -69,7 +69,9 @@ export default function ProductoFormPage() {
       const data = await res.json();
       if (data.success) {
         setCategorias(data.data);
-        if (data.data.length > 0 && !formData.categoria) {
+        // Solo auto-seleccionar primera categoría en modo creación.
+        // En edición, fetchProducto() se encarga de setear la categoría y sus subcategorías.
+        if (!isEditing && data.data.length > 0) {
           const primeraCat = data.data[0]._id;
           setFormData((prev) => ({ ...prev, categoria: primeraCat }));
           fetchSubcategorias(primeraCat);
