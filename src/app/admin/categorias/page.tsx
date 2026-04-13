@@ -99,7 +99,7 @@ export default function AdminCategoriasPage() {
       if (data.success) {
         setShowForm(false);
         setEditingId(null);
-        setFormData({ nombre: '', descripcion: '' });
+        setFormData({ nombre: '', descripcion: '', imagen: '' });
         fetchCategorias();
       } else {
         alert(data.message || 'Error al guardar categoría');
