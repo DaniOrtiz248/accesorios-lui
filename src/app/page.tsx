@@ -107,11 +107,12 @@ export default function Home() {
       {!loading && categorias.length > 0 && (
         <section className="py-16 bg-background-light">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col items-center gap-3 mb-10 sm:flex-row sm:justify-between">
-              <h2 className="text-3xl font-bold text-primary-900 text-center">Nuestras Categorías</h2>
+            {/* Header centrado con "Ver todo" absoluto en desktop */}
+            <div className="relative mb-10 text-center">
+              <h2 className="text-3xl font-bold text-primary-900">Nuestras Categorías</h2>
               <Link
                 href="/productos"
-                className="text-sm font-medium text-primary-600 hover:text-primary-800 transition border border-primary-200 px-5 py-2 rounded-full hover:border-primary-400"
+                className="inline-block mt-3 sm:mt-0 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2 text-sm font-medium text-primary-600 hover:text-primary-800 transition border border-primary-200 px-5 py-2 rounded-full hover:border-primary-400"
               >
                 Ver todo
               </Link>
@@ -122,7 +123,7 @@ export default function Home() {
               {/* Botón anterior */}
               <button
                 onClick={() => scrollCarousel('prev')}
-                className="hidden sm:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-md rounded-full items-center justify-center text-primary-700 hover:bg-primary-50 transition"
+                className="hidden sm:flex absolute -left-3 top-[56px] -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-md rounded-full items-center justify-center text-primary-700 hover:bg-primary-50 transition"
                 aria-label="Anterior"
               >
                 <FiChevronLeft className="text-xl" />
@@ -131,26 +132,26 @@ export default function Home() {
               {/* Track del carrusel */}
               <div
                 ref={carouselRef}
-                className="flex gap-6 overflow-x-auto scroll-smooth pt-3 pb-3 scrollbar-hide"
+                className="group/carousel flex gap-6 overflow-x-auto scroll-smooth pt-4 pb-4 scrollbar-hide sm:px-6"
               >
                 {categorias.map((cat) => (
                   <Link
                     key={cat._id}
                     href={`/productos?categoria=${cat._id}`}
-                    className="group flex-shrink-0 flex flex-col items-center gap-3 w-32"
+                    className="flex-shrink-0 flex flex-col items-center gap-3 w-36 transition-all duration-300 group-hover/carousel:opacity-50 group-hover/carousel:scale-90 hover:!opacity-100 hover:!scale-110 cursor-pointer"
                   >
                     {/* Círculo */}
-                    <div className="relative w-28 h-28 rounded-full overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-200 ring-2 ring-primary-100 group-hover:ring-primary-300">
+                    <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-primary-100 to-accent-light shadow-sm hover:shadow-lg transition-all duration-300 ring-2 ring-primary-100 hover:ring-primary-400">
                       {cat.imagen ? (
                         <Image
                           src={cat.imagen}
                           alt={cat.nombre}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="object-cover transition-transform duration-300"
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full w-full">
-                          <span className="text-3xl font-bold text-primary-400">
+                          <span className="text-4xl font-bold text-primary-400">
                             {getInitials(cat.nombre)}
                           </span>
                         </div>
@@ -167,7 +168,7 @@ export default function Home() {
               {/* Botón siguiente */}
               <button
                 onClick={() => scrollCarousel('next')}
-                className="hidden sm:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-md rounded-full items-center justify-center text-primary-700 hover:bg-primary-50 transition"
+                className="hidden sm:flex absolute -right-3 top-[56px] -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-md rounded-full items-center justify-center text-primary-700 hover:bg-primary-50 transition"
                 aria-label="Siguiente"
               >
                 <FiChevronRight className="text-xl" />
