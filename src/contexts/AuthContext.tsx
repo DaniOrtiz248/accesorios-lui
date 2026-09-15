@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,6 +40,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(false);
   }, []);
+
+  // Navegar a /admin únicamente cuando el token ya esté disponible en el
+  // estado del contexto, evitando la condición de carrera donde las páginas
+  // admin (que redirigen si !isAuthenticated) se montan antes de que el
+  // estado de autenticación se haya propagado.
+  useEffect(() => {
+    if (redirectAfterLogin && token) {
+      setRedirectAfterLogin(false);
+      router.push('/admin');
+    }
+  }, [redirectAfterLogin, token, router]);
 
   const login = async (username: string, password: string) => {
     try {
@@ -60,13 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('usuario', JSON.stringify(data.data.usuario));
 
-      router.push('/admin');
+      setRedirectAfterLogin(true);
     } catch (error: any) {
       throw error;
     }
   };
 
   const logout = () => {
+    setRedirectAfterLogin(false);
     setToken(null);
     setUsuario(null);
     localStorage.removeItem('token');
