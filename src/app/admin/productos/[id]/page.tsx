@@ -5,7 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiArrowLeft, FiUpload, FiX, FiSave, FiCamera, FiImage } from 'react-icons/fi';
+import { FiArrowLeft, FiUpload, FiX, FiSave, FiCamera, FiImage, FiCrop } from 'react-icons/fi';
+import ImageCropperModal from '@/components/ImageCropperModal';
+
+const MAX_IMAGENES = 10;
 
 interface Categoria {
   _id: string;
@@ -32,6 +35,15 @@ export default function ProductoFormPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // Estado del editor de recorte/encuadre reutilizable.
+  // mode 'new' = imagen recién seleccionada (aún no subida a Cloudinary).
+  // mode 'edit' = reencuadre de una imagen ya existente en el producto.
+  const [cropperTarget, setCropperTarget] = useState<
+    | { mode: 'new'; src: string }
+    | { mode: 'edit'; src: string; index: number }
+    | null
+  >(null);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -173,9 +185,10 @@ export default function ProductoFormPage() {
     
     canvas.toBlob(async (blob) => {
       if (!blob) return;
-      
+
       closeWebcam();
-      await uploadImageBlob(blob);
+      const objectUrl = URL.createObjectURL(blob);
+      setCropperTarget({ mode: 'new', src: objectUrl });
     }, 'image/jpeg', 0.9);
   };
 
@@ -190,107 +203,103 @@ export default function ProductoFormPage() {
     }
   };
 
-  // Upload imagen desde blob (webcam)
-  const uploadImageBlob = async (blob: Blob) => {
-    setUploadingImage(true);
-    console.log('📸 Foto capturada desde webcam');
-
-    try {
-      const formData = new FormData();
-      formData.append('file', blob, 'webcam-photo.jpg');
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        const imageUrl = data.data?.url || data.url;
-        const publicId = data.data?.publicId || '';
-        console.log('✅ Imagen subida exitosamente:', imageUrl);
-        setFormData((prev) => ({
-          ...prev,
-          imagenes: [...prev.imagenes, imageUrl],
-          imagenesPublicIds: [...prev.imagenesPublicIds, publicId],
-        }));
-      } else {
-        alert('Error al subir la imagen');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al subir la imagen');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    console.log('📸 Archivo seleccionado:', file.name, file.type, file.size);
 
     // Validar tamaño (máximo 10MB)
     if (file.size > 10 * 1024 * 1024) {
       alert('La imagen no debe superar 10MB');
+      e.target.value = '';
       return;
     }
 
     // Validar tipo
     if (!file.type.startsWith('image/')) {
       alert('Solo se permiten imágenes');
+      e.target.value = '';
       return;
     }
 
+    // Abrir el editor de recorte antes de subir nada a Cloudinary.
+    const objectUrl = URL.createObjectURL(file);
+    setCropperTarget({ mode: 'new', src: objectUrl });
+    e.target.value = '';
+  };
+
+  // Sube el Blob ya recortado (nuevo o reencuadre de uno existente) y
+  // agrega/actualiza la imagen correspondiente en formData.
+  const handleCropConfirm = async (blob: Blob) => {
+    if (!cropperTarget) return;
+    const target = cropperTarget;
+
     setUploadingImage(true);
-    console.log('⏳ Iniciando upload...');
-
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      console.log('🚀 Enviando a /api/upload...');
+      const uploadForm = new FormData();
+      uploadForm.append('file', blob, 'imagen-producto.jpg');
 
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: uploadForm,
       });
 
-      console.log('📡 Respuesta recibida, status:', res.status);
-
       const data = await res.json();
-      console.log('📦 Data:', data);
 
-      if (data.success) {
-        const imageUrl = data.data?.url || data.url;
-        const publicId = data.data?.publicId || '';
-        console.log('✅ Imagen subida exitosamente:', imageUrl);
+      if (!data.success) {
+        alert(data.message || 'Error al subir imagen');
+        return;
+      }
+
+      const imageUrl = data.data?.url || data.url;
+      const publicId = data.data?.publicId || '';
+
+      if (target.mode === 'new') {
         setFormData((prev) => ({
           ...prev,
           imagenes: [...prev.imagenes, imageUrl],
           imagenesPublicIds: [...prev.imagenesPublicIds, publicId],
         }));
-        alert('Imagen subida correctamente');
       } else {
-        console.error('❌ Error del servidor:', data.message);
-        alert(data.message || 'Error al subir imagen');
+        // Reencuadre de una imagen existente: se reemplaza en el índice
+        // correspondiente. La imagen anterior en Cloudinary será eliminada
+        // por el backend al guardar el producto (mismo mecanismo que ya
+        // limpia imágenes removidas), evitando archivos huérfanos.
+        const { index } = target;
+        setFormData((prev) => {
+          const imagenes = [...prev.imagenes];
+          const imagenesPublicIds = [...prev.imagenesPublicIds];
+          imagenes[index] = imageUrl;
+          imagenesPublicIds[index] = publicId;
+          return { ...prev, imagenes, imagenesPublicIds };
+        });
       }
     } catch (error) {
-      console.error('❌ Error de red:', error);
-      alert('Error al subir imagen: ' + error);
+      console.error('Error al subir imagen recortada:', error);
+      alert('Error al subir imagen');
     } finally {
       setUploadingImage(false);
-      // Reset input
-      e.target.value = '';
+      if (target.src.startsWith('blob:')) {
+        URL.revokeObjectURL(target.src);
+      }
+      setCropperTarget(null);
     }
+  };
+
+  const handleCropCancel = () => {
+    if (cropperTarget?.src.startsWith('blob:')) {
+      URL.revokeObjectURL(cropperTarget.src);
+    }
+    setCropperTarget(null);
+  };
+
+  // Abrir el editor de recorte sobre una imagen ya guardada del producto.
+  const handleEditExistingImage = (index: number) => {
+    const src = formData.imagenes[index];
+    if (!src) return;
+    setCropperTarget({ mode: 'edit', src, index });
   };
 
   const removeImage = (index: number) => {
@@ -362,28 +371,39 @@ export default function ProductoFormPage() {
             {/* Imágenes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Imágenes (máximo 5)
+                Imágenes (máximo {MAX_IMAGENES})
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 mb-4">
                 {formData.imagenes.map((img, index) => (
-                  <div key={index} className="relative aspect-square">
-                    <Image
-                      src={img}
-                      alt={`Imagen ${index + 1}`}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
+                  <div key={index} className="relative aspect-square group">
+                    <button
+                      type="button"
+                      onClick={() => handleEditExistingImage(index)}
+                      className="absolute inset-0 w-full h-full"
+                      title="Ajustar encuadre/zoom"
+                    >
+                      <Image
+                        src={img}
+                        alt={`Imagen ${index + 1}`}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                      <span className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition flex items-center justify-center">
+                        <FiCrop className="text-white text-xl opacity-0 group-hover:opacity-100 transition" />
+                      </span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
+                      title="Eliminar imagen"
                     >
                       <FiX />
                     </button>
                   </div>
                 ))}
               </div>
-              {formData.imagenes.length < 5 && (
+              {formData.imagenes.length < MAX_IMAGENES && (
                 <div className="grid grid-cols-2 gap-3">
                   {/* Botón Cámara */}
                   <input
@@ -412,7 +432,7 @@ export default function ProductoFormPage() {
                           <FiCamera className="text-3xl text-gray-400 mb-2" />
                           <span className="text-sm font-medium text-gray-700">Cámara</span>
                           <span className="text-xs text-gray-500 mt-1">
-                            {formData.imagenes.length}/5
+                            {formData.imagenes.length}/{MAX_IMAGENES}
                           </span>
                         </>
                       )}
@@ -439,7 +459,7 @@ export default function ProductoFormPage() {
                           <FiImage className="text-3xl text-gray-400 mb-2" />
                           <span className="text-sm font-medium text-gray-700">Galería</span>
                           <span className="text-xs text-gray-500 mt-1">
-                            {formData.imagenes.length}/5
+                            {formData.imagenes.length}/{MAX_IMAGENES}
                           </span>
                         </>
                       )}
@@ -646,6 +666,17 @@ export default function ProductoFormPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Editor de recorte/encuadre (imágenes nuevas o reencuadre de existentes) */}
+      {cropperTarget && (
+        <ImageCropperModal
+          imageSrc={cropperTarget.src}
+          aspect={1}
+          title={cropperTarget.mode === 'edit' ? 'Ajustar encuadre de la imagen' : 'Ajustar imagen'}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
       )}
     </div>
   );

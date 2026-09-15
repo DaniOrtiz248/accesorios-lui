@@ -8,7 +8,7 @@ import { successResponse, errorResponse, handleMongoError, handleAuthError } fro
 import { deleteProductImage } from '@/lib/cloudinary';
 import { sanitizeObject, isValidObjectId, limitArrayLength, validateTextInput, sanitizeNumber, pickAllowedFields } from '@/lib/security';
 
-const MAX_IMAGENES = 5;
+const MAX_IMAGENES = 10;
 
 // Campos permitidos que un admin puede actualizar en un producto
 const ALLOWED_PRODUCTO_FIELDS = [
@@ -120,7 +120,7 @@ export async function PUT(
       return errorResponse('Producto no encontrado', 404);
     }
     
-    // Limpiar y limitar array de imágenes (máximo 5, igual que el modelo y la UI)
+    // Limpiar y limitar array de imágenes (máximo 10, igual que el modelo y la UI)
     if (body.imagenes && Array.isArray(body.imagenes)) {
       body.imagenes = limitArrayLength(
         body.imagenes.filter((img: any) => 

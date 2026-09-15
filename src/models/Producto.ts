@@ -46,9 +46,9 @@ const ProductoSchema: Schema = new Schema(
       default: [],
       validate: {
         validator: function (v: string[]) {
-          return v.length <= 5;
+          return v.length <= 10;
         },
-        message: 'No puedes subir más de 5 imágenes',
+        message: 'No puedes subir más de 10 imágenes',
       },
     },
     // Public IDs de Cloudinary (índice alineado con `imagenes`).

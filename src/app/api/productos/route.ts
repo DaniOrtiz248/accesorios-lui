@@ -7,7 +7,7 @@ import { verifyAdmin } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
 import { sanitizeString, sanitizeNumber, isValidObjectId, limitArrayLength, pickAllowedFields, sanitizeObject } from '@/lib/security';
 
-const MAX_IMAGENES = 5;
+const MAX_IMAGENES = 10;
 
 // Campos permitidos que un admin puede establecer al crear un producto
 const ALLOWED_PRODUCTO_FIELDS = [
