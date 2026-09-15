@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { FiMail, FiLock, FiShoppingBag } from 'react-icons/fi';
+import { FiMail, FiLock, FiShoppingBag, FiArrowLeft } from 'react-icons/fi';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -91,6 +92,16 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-primary-600">
           <p>Solo administradores autorizados</p>
+        </div>
+
+        <div className="mt-4 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center space-x-1.5 text-sm text-primary-500 hover:text-primary-700 transition"
+          >
+            <FiArrowLeft className="text-base" />
+            <span>Ir a la tienda</span>
+          </Link>
         </div>
       </div>
     </div>
