@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiPackage, FiTag, FiLogOut, FiHome, FiLayers } from 'react-icons/fi';
+import { FiPackage, FiTag, FiLayers } from 'react-icons/fi';
 
 export default function AdminDashboard() {
-  const { usuario, logout, isAuthenticated, isLoading } = useAuth();
+  const { usuario, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -32,26 +32,10 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-3 md:h-16 gap-3">
-            <div className="min-w-0 flex-1">
+          <div className="py-3 md:h-16 flex items-center">
+            <div className="min-w-0">
               <h1 className="text-base md:text-xl font-bold text-gray-800 truncate">Panel de Administración</h1>
               <p className="text-xs md:text-sm text-gray-600 truncate">Bienvenida, {usuario?.nombre}</p>
-            </div>
-            <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-primary-600 transition"
-                title="Ver sitio público"
-              >
-                <FiHome className="text-xl md:text-2xl" />
-              </Link>
-              <button
-                onClick={logout}
-                className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-red-600 transition text-sm md:text-base"
-              >
-                <FiLogOut />
-                <span className="hidden sm:inline">Salir</span>
-              </button>
             </div>
           </div>
         </div>
