@@ -9,6 +9,57 @@ import { sanitizeString, sanitizeNumber, isValidObjectId, limitArrayLength, pick
 
 const MAX_IMAGENES = 10;
 
+// Mapa de letra base -> variantes acentuadas frecuentes en español.
+// Se usa para que la búsqueda encuentre "Corazón" aunque el usuario escriba
+// "corazon" (sin tilde) y viceversa.
+const ACCENT_VARIANTS: Record<string, string> = {
+  a: 'aáàâäã',
+  e: 'eéèêë',
+  i: 'iíìîï',
+  o: 'oóòôöõ',
+  u: 'uúùûü',
+  n: 'nñ',
+  c: 'cç',
+  y: 'yýÿ',
+};
+
+// Escapa metacaracteres de regex para tratar el texto como literal.
+function escapeRegexChar(ch: string): string {
+  return ch.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Construye un patrón de regex que permite búsqueda parcial (substring,
+ * en cualquier posición), insensible a mayúsculas/minúsculas (se combina
+ * con el flag 'i') e insensible a tildes.
+ *
+ * Estrategia: normalizamos el término a su forma base (NFD + remoción de
+ * diacríticos) usando la API nativa de Unicode de JS (sin dependencias
+ * nuevas). Así, tanto si el usuario escribe "corazon" como "corazón",
+ * terminamos trabajando sobre la misma base "corazon", y por cada letra
+ * base construimos una clase de caracteres que acepta también sus
+ * variantes acentuadas, para poder encontrar "Corazón" en la base de datos.
+ */
+function buildPartialAccentInsensitiveRegexPattern(term: string): string {
+  const normalized = term
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remueve diacríticos combinados
+    .toLowerCase();
+
+  const parts: string[] = [];
+  for (const ch of normalized) {
+    if (/\s/.test(ch)) {
+      parts.push('\\s+');
+    } else if (ACCENT_VARIANTS[ch]) {
+      parts.push(`[${ACCENT_VARIANTS[ch]}]`);
+    } else {
+      parts.push(escapeRegexChar(ch));
+    }
+  }
+  // Sin anclas (^ o $): permite coincidencia parcial en cualquier posición.
+  return parts.join('');
+}
+
 // Campos permitidos que un admin puede establecer al crear un producto
 const ALLOWED_PRODUCTO_FIELDS = [
   'nombre',
@@ -64,9 +115,16 @@ export async function GET(request: NextRequest) {
     }
     
     if (busqueda) {
-      const busquedaSanitizada = sanitizeString(busqueda);
+      const busquedaSanitizada = sanitizeString(busqueda).trim();
       if (busquedaSanitizada) {
-        filtros.$text = { $search: busquedaSanitizada };
+        const pattern = buildPartialAccentInsensitiveRegexPattern(busquedaSanitizada);
+        if (pattern) {
+          const regex = new RegExp(pattern, 'i');
+          filtros.$or = [
+            { nombre: { $regex: regex } },
+            { descripcion: { $regex: regex } },
+          ];
+        }
       }
     }
     
