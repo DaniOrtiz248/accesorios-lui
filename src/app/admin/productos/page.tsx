@@ -79,7 +79,9 @@ export default function AdminProductosPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await fetch('/api/categorias?includeInactive=true');
+      const res = await fetch('/api/categorias?includeInactive=true', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       if (data.success) setCategorias(data.data);
     } catch (error) {
@@ -123,7 +125,9 @@ export default function AdminProductosPage() {
       if (precioMin) params.append('precioMin', precioMin);
       if (precioMax) params.append('precioMax', precioMax);
 
-      const res = await fetch(`/api/productos?${params.toString()}`);
+      const res = await fetch(`/api/productos?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
       const data = await res.json();
       

@@ -3,12 +3,26 @@ import connectDB from '@/lib/mongodb';
 import Producto from '@/models/Producto';
 import Categoria from '@/models/Categoria';
 import Subcategoria from '@/models/Subcategoria';
-import { verifyAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
-import { deleteImage } from '@/lib/cloudinary';
-import { sanitizeObject, isValidObjectId, limitArrayLength, validateTextInput, sanitizeNumber } from '@/lib/security';
+import { verifyAdmin } from '@/lib/auth';
+import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
+import { deleteProductImage } from '@/lib/cloudinary';
+import { sanitizeObject, isValidObjectId, limitArrayLength, validateTextInput, sanitizeNumber, pickAllowedFields } from '@/lib/security';
 
-// GET: Obtener producto por ID (público)
+const MAX_IMAGENES = 5;
+
+// Campos permitidos que un admin puede actualizar en un producto
+const ALLOWED_PRODUCTO_FIELDS = [
+  'nombre',
+  'descripcion',
+  'precio',
+  'categoria',
+  'subcategorias',
+  'imagenes',
+  'imagenesPublicIds',
+  'activo',
+] as const;
+
+// GET: Obtener producto por ID (público si está activo; inactivo sólo para admin)
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -30,6 +44,15 @@ export async function GET(
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
     }
+
+    // Un producto inactivo sólo puede verlo un administrador autenticado
+    if (!producto.activo) {
+      try {
+        verifyAdmin(request);
+      } catch {
+        return errorResponse('Producto no encontrado', 404);
+      }
+    }
     
     return successResponse(producto);
   } catch (error: any) {
@@ -38,13 +61,13 @@ export async function GET(
   }
 }
 
-// PUT: Actualizar producto (requiere auth)
+// PUT: Actualizar producto (requiere rol admin)
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     
     // Validar ObjectId
     if (!isValidObjectId(params.id)) {
@@ -55,7 +78,11 @@ export async function PUT(
     // Force model registration for serverless cold starts
     Categoria; Subcategoria;
     
-    let body = await request.json();
+    const rawBody = await request.json();
+
+    // Whitelist: sólo se aceptan campos previstos (previene mass assignment
+    // y el uso de operadores de MongoDB como $set/$inc en el body)
+    let body = pickAllowedFields<any>(rawBody, ALLOWED_PRODUCTO_FIELDS as unknown as string[]);
     
     // Sanitizar datos de entrada
     body = sanitizeObject(body);
@@ -93,27 +120,40 @@ export async function PUT(
       return errorResponse('Producto no encontrado', 404);
     }
     
-    // Limpiar y limitar array de imágenes
+    // Limpiar y limitar array de imágenes (máximo 5, igual que el modelo y la UI)
     if (body.imagenes && Array.isArray(body.imagenes)) {
       body.imagenes = limitArrayLength(
         body.imagenes.filter((img: any) => 
           img && typeof img === 'string' && img.trim() !== '' && img.startsWith('http')
         ),
-        10
+        MAX_IMAGENES
       );
+
+      // Limpiar/alinear array de public_ids (si viene) con el mismo límite
+      if (body.imagenesPublicIds && Array.isArray(body.imagenesPublicIds)) {
+        body.imagenesPublicIds = limitArrayLength(
+          body.imagenesPublicIds.filter((id: any) => typeof id === 'string'),
+          MAX_IMAGENES
+        );
+      }
       
       // Identificar imágenes que se eliminaron
       const imagenesActuales = productoActual.imagenes || [];
+      const publicIdsActuales = productoActual.imagenesPublicIds || [];
       const imagenesNuevas = body.imagenes || [];
-      const imagenesAEliminar = imagenesActuales.filter(
-        (imgActual: string) => !imagenesNuevas.includes(imgActual)
-      );
       
-      // Eliminar imágenes viejas de Cloudinary
+      const imagenesAEliminar: { url: string; publicId?: string }[] = [];
+      imagenesActuales.forEach((imgActual: string, index: number) => {
+        if (!imagenesNuevas.includes(imgActual)) {
+          imagenesAEliminar.push({ url: imgActual, publicId: publicIdsActuales[index] });
+        }
+      });
+      
+      // Eliminar imágenes viejas de Cloudinary (por public_id si está disponible)
       if (imagenesAEliminar.length > 0) {
         await Promise.all(
-          imagenesAEliminar.map((url: string) => 
-            deleteImage(url).catch((err) => {
+          imagenesAEliminar.map(({ url, publicId }) => 
+            deleteProductImage(url, publicId).catch((err) => {
               console.error('Error al eliminar imagen:', err);
             })
           )
@@ -134,21 +174,20 @@ export async function PUT(
     
     return successResponse(producto, 'Producto actualizado exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al actualizar producto:', error);
     return handleMongoError(error);
   }
 }
 
-// DELETE: Eliminar producto (requiere auth)
+// DELETE: Eliminar producto (requiere rol admin)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     
     // Validar ObjectId
     if (!isValidObjectId(params.id)) {
@@ -165,10 +204,13 @@ export async function DELETE(
       return errorResponse('Producto no encontrado', 404);
     }
     
-    // Eliminar imágenes de Cloudinary
+    // Eliminar imágenes de Cloudinary (por public_id si está disponible)
     if (producto.imagenes && producto.imagenes.length > 0) {
+      const publicIds = producto.imagenesPublicIds || [];
       await Promise.all(
-        producto.imagenes.map((url) => deleteImage(url).catch(console.error))
+        producto.imagenes.map((url, index) =>
+          deleteProductImage(url, publicIds[index]).catch(console.error)
+        )
       );
     }
     
@@ -176,9 +218,8 @@ export async function DELETE(
     
     return successResponse(null, 'Producto eliminado exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al eliminar producto:', error);
     return errorResponse('Error al eliminar producto', 500);
   }

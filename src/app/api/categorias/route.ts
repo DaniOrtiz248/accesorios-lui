@@ -2,11 +2,13 @@ import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Categoria from '@/models/Categoria';
 import Producto from '@/models/Producto';
-import { verifyAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
-import { sanitizeObject } from '@/lib/security';
+import { verifyAdmin } from '@/lib/auth';
+import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
+import { sanitizeObject, pickAllowedFields } from '@/lib/security';
 
-// GET: Obtener todas las categorías activas (público) o todas con conteo (admin)
+const ALLOWED_CATEGORIA_FIELDS = ['nombre', 'descripcion', 'imagen', 'activo'] as const;
+
+// GET: Obtener todas las categorías activas (público) o todas con conteo (solo admin)
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -15,8 +17,19 @@ export async function GET(request: NextRequest) {
     const includeInactive = searchParams.get('includeInactive');
     const includeCount = searchParams.get('includeCount');
     
-    // Si se solicitan todas las categorías (admin)
-    const query = includeInactive ? {} : { activo: true };
+    // Ver categorías inactivas requiere ser administrador autenticado
+    let query: any = { activo: true };
+    if (includeInactive) {
+      try {
+        verifyAdmin(request);
+        query = {};
+      } catch (error: any) {
+        const authErrorResponse = handleAuthError(error);
+        if (authErrorResponse) return authErrorResponse;
+        throw error;
+      }
+    }
+    
     const categorias = await Categoria.find(query).sort({ nombre: 1 }).lean();
     
     // Si se solicita incluir conteo de productos
@@ -37,22 +50,22 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Crear nueva categoría (requiere auth)
+// POST: Crear nueva categoría (requiere rol admin)
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación
-    verifyAuth(request);
+    // Verificar autenticación y rol admin
+    verifyAdmin(request);
     
     await connectDB();
     
-    const body = sanitizeObject(await request.json());
+    const rawBody = await request.json();
+    const body = sanitizeObject(pickAllowedFields<any>(rawBody, ALLOWED_CATEGORIA_FIELDS as unknown as string[]));
     const categoria = await Categoria.create(body);
     
     return successResponse(categoria, 'Categoría creada exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al crear categoría:', error);
     return handleMongoError(error);
   }

@@ -41,7 +41,9 @@ export default function AdminCategoriasPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await fetch('/api/categorias?includeInactive=true&includeCount=true');
+      const res = await fetch('/api/categorias?includeInactive=true&includeCount=true', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       if (data.success) {
         setCategorias(data.data);

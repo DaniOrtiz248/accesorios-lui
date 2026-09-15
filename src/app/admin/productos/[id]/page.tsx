@@ -40,6 +40,7 @@ export default function ProductoFormPage() {
     subcategorias: [] as string[],
     categoria: '',
     imagenes: [] as string[],
+    imagenesPublicIds: [] as string[],
     activo: true,
   });
 
@@ -98,7 +99,9 @@ export default function ProductoFormPage() {
 
   const fetchProducto = async () => {
     try {
-      const res = await fetch(`/api/productos/${params.id}`);
+      const res = await fetch(`/api/productos/${params.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       if (data.success) {
         const producto = data.data;
@@ -111,6 +114,7 @@ export default function ProductoFormPage() {
           ),
           categoria: producto.categoria?._id || producto.categoria,
           imagenes: producto.imagenes || [],
+          imagenesPublicIds: producto.imagenesPublicIds || [],
           activo: producto.activo,
         });
         if (producto.categoria?._id || producto.categoria) {
@@ -207,10 +211,12 @@ export default function ProductoFormPage() {
 
       if (data.success) {
         const imageUrl = data.data?.url || data.url;
+        const publicId = data.data?.publicId || '';
         console.log('✅ Imagen subida exitosamente:', imageUrl);
         setFormData((prev) => ({
           ...prev,
           imagenes: [...prev.imagenes, imageUrl],
+          imagenesPublicIds: [...prev.imagenesPublicIds, publicId],
         }));
       } else {
         alert('Error al subir la imagen');
@@ -265,10 +271,12 @@ export default function ProductoFormPage() {
 
       if (data.success) {
         const imageUrl = data.data?.url || data.url;
+        const publicId = data.data?.publicId || '';
         console.log('✅ Imagen subida exitosamente:', imageUrl);
         setFormData((prev) => ({
           ...prev,
           imagenes: [...prev.imagenes, imageUrl],
+          imagenesPublicIds: [...prev.imagenesPublicIds, publicId],
         }));
         alert('Imagen subida correctamente');
       } else {
@@ -289,6 +297,7 @@ export default function ProductoFormPage() {
     setFormData((prev) => ({
       ...prev,
       imagenes: prev.imagenes.filter((_, i) => i !== index),
+      imagenesPublicIds: prev.imagenesPublicIds.filter((_, i) => i !== index),
     }));
   };
 

@@ -2,9 +2,11 @@ import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Subcategoria from '@/models/Subcategoria';
 import Categoria from '@/models/Categoria';
-import { verifyAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
-import { isValidObjectId, sanitizeObject } from '@/lib/security';
+import { verifyAdmin } from '@/lib/auth';
+import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
+import { isValidObjectId, sanitizeObject, pickAllowedFields } from '@/lib/security';
+
+const ALLOWED_SUBCATEGORIA_FIELDS = ['nombre', 'descripcion', 'categoria', 'activo'] as const;
 
 // GET: Obtener subcategorías, filtrar por categoría opcionalmente (público)
 export async function GET(request: NextRequest) {
@@ -19,7 +21,16 @@ export async function GET(request: NextRequest) {
 
     const query: any = {};
 
-    if (!includeInactive) {
+    // Ver subcategorías inactivas requiere ser administrador autenticado
+    if (includeInactive) {
+      try {
+        verifyAdmin(request);
+      } catch (error: any) {
+        const authErrorResponse = handleAuthError(error);
+        if (authErrorResponse) return authErrorResponse;
+        throw error;
+      }
+    } else {
       query.activo = true;
     }
 
@@ -39,14 +50,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Crear subcategoría (requiere auth)
+// POST: Crear subcategoría (requiere rol admin)
 export async function POST(request: NextRequest) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     await connectDB();
     Categoria;
 
-    const body = sanitizeObject(await request.json());
+    const rawBody = await request.json();
+    const body = sanitizeObject(pickAllowedFields<any>(rawBody, ALLOWED_SUBCATEGORIA_FIELDS as unknown as string[]));
 
     if (!body.categoria || !isValidObjectId(body.categoria)) {
       return errorResponse('ID de categoría inválido', 400);
@@ -57,9 +69,8 @@ export async function POST(request: NextRequest) {
 
     return successResponse(subcategoria, 'Subcategoría creada exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al crear subcategoría:', error);
     return handleMongoError(error);
   }

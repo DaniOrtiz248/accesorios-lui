@@ -62,3 +62,28 @@ export function verifyAuth(request: NextRequest): JWTPayload {
 
   return payload;
 }
+
+/**
+ * Error tipado para distinguir problemas de autorización (403) de
+ * problemas de autenticación (401) en los handlers de las rutas.
+ */
+export class ForbiddenError extends Error {
+  constructor(message: string = 'No tienes permisos para realizar esta acción') {
+    super(message);
+    this.name = 'ForbiddenError';
+  }
+}
+
+/**
+ * Middleware: Verifica autenticación Y que el usuario tenga rol 'admin'.
+ * Reutiliza verifyAuth() para la parte de autenticación.
+ */
+export function verifyAdmin(request: NextRequest): JWTPayload {
+  const payload = verifyAuth(request);
+
+  if (payload.rol !== 'admin') {
+    throw new ForbiddenError();
+  }
+
+  return payload;
+}

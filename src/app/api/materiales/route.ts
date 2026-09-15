@@ -2,9 +2,11 @@ import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Material from '@/models/Material';
 import Producto from '@/models/Producto';
-import { verifyAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
-import { sanitizeObject } from '@/lib/security';
+import { verifyAdmin } from '@/lib/auth';
+import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
+import { sanitizeObject, pickAllowedFields } from '@/lib/security';
+
+const ALLOWED_MATERIAL_FIELDS = ['nombre', 'descripcion'] as const;
 
 // GET: Obtener todos los materiales (público) con conteo opcional
 export async function GET(request: NextRequest) {
@@ -34,20 +36,20 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Crear nuevo material (requiere auth)
+// POST: Crear nuevo material (requiere rol admin)
 export async function POST(request: NextRequest) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     await connectDB();
     
-    const body = sanitizeObject(await request.json());
+    const rawBody = await request.json();
+    const body = sanitizeObject(pickAllowedFields<any>(rawBody, ALLOWED_MATERIAL_FIELDS as unknown as string[]));
     const material = await Material.create(body);
     
     return successResponse(material, 'Material creado exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al crear material:', error);
     return handleMongoError(error);
   }

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { verifyAuth } from '@/lib/auth';
+import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
-import { successResponse, errorResponse } from '@/lib/api-utils';
+import { successResponse, errorResponse, handleAuthError } from '@/lib/api-utils';
 
 // Tipos de archivo permitidos (solo imágenes)
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -9,7 +9,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(request: NextRequest) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -36,13 +36,12 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
     
-    const imageUrl = await uploadImage(base64, 'productos');
+    const { url, publicId } = await uploadImage(base64, 'productos');
     
-    return successResponse({ url: imageUrl }, 'Imagen subida exitosamente');
+    return successResponse({ url, publicId }, 'Imagen subida exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al subir imagen:', error);
     return errorResponse('Error al subir imagen', 500);
   }

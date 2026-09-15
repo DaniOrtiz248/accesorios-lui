@@ -7,6 +7,7 @@ export interface IProducto extends Document {
   subcategorias: mongoose.Types.ObjectId[];
   categoria: mongoose.Types.ObjectId;
   imagenes: string[];
+  imagenesPublicIds: string[];
   activo: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +50,14 @@ const ProductoSchema: Schema = new Schema(
         },
         message: 'No puedes subir más de 5 imágenes',
       },
+    },
+    // Public IDs de Cloudinary (índice alineado con `imagenes`).
+    // Se usan para eliminar imágenes de forma confiable. Puede estar
+    // vacío o desalineado en productos antiguos creados antes de este campo;
+    // en ese caso se recurre al método legado de borrado por URL.
+    imagenesPublicIds: {
+      type: [String],
+      default: [],
     },
     activo: {
       type: Boolean,

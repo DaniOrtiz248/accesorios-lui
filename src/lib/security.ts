@@ -90,3 +90,21 @@ export function limitArrayLength<T>(arr: T[], maxLength: number = 50): T[] {
   if (!Array.isArray(arr)) return [];
   return arr.slice(0, maxLength);
 }
+
+/**
+ * Toma únicamente los campos permitidos de un objeto (whitelist),
+ * para prevenir mass assignment de campos no previstos.
+ */
+export function pickAllowedFields<T extends Record<string, any>>(
+  obj: any,
+  allowedFields: (keyof T)[]
+): Partial<T> {
+  const result: Partial<T> = {};
+  if (!obj || typeof obj !== 'object') return result;
+  for (const field of allowedFields) {
+    if (Object.prototype.hasOwnProperty.call(obj, field)) {
+      result[field] = obj[field];
+    }
+  }
+  return result;
+}

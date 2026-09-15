@@ -23,6 +23,20 @@ export function errorResponse(message: string, status: number = 400) {
 }
 
 /**
+ * Maneja errores de autenticación/autorización lanzados por verifyAuth/verifyAdmin.
+ * Devuelve la respuesta de error apropiada (401/403) o null si el error no es de auth.
+ */
+export function handleAuthError(error: any) {
+  if (error?.name === 'ForbiddenError') {
+    return errorResponse(error.message || 'No tienes permisos para realizar esta acción', 403);
+  }
+  if (error?.message === 'No autorizado' || error?.message === 'Token inválido o expirado') {
+    return errorResponse(error.message, 401);
+  }
+  return null;
+}
+
+/**
  * Maneja errores de MongoDB
  */
 export function handleMongoError(error: any) {

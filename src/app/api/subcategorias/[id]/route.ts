@@ -2,11 +2,13 @@ import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Subcategoria from '@/models/Subcategoria';
 import Categoria from '@/models/Categoria';
-import { verifyAuth } from '@/lib/auth';
-import { successResponse, errorResponse, handleMongoError } from '@/lib/api-utils';
-import { isValidObjectId, sanitizeObject } from '@/lib/security';
+import { verifyAdmin } from '@/lib/auth';
+import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
+import { isValidObjectId, sanitizeObject, pickAllowedFields } from '@/lib/security';
 
-// GET: Obtener subcategoría por ID
+const ALLOWED_SUBCATEGORIA_FIELDS = ['nombre', 'descripcion', 'categoria', 'activo'] as const;
+
+// GET: Obtener subcategoría por ID (público si está activa; inactiva sólo para admin)
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -19,6 +21,14 @@ export async function GET(
     const subcategoria = await Subcategoria.findById(params.id).populate('categoria', 'nombre');
     if (!subcategoria) return errorResponse('Subcategoría no encontrada', 404);
 
+    if (!subcategoria.activo) {
+      try {
+        verifyAdmin(request);
+      } catch {
+        return errorResponse('Subcategoría no encontrada', 404);
+      }
+    }
+
     return successResponse(subcategoria);
   } catch (error: any) {
     console.error('Error al obtener subcategoría:', error);
@@ -26,18 +36,19 @@ export async function GET(
   }
 }
 
-// PUT: Actualizar subcategoría (requiere auth)
+// PUT: Actualizar subcategoría (requiere rol admin)
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     if (!isValidObjectId(params.id)) return errorResponse('ID inválido', 400);
     await connectDB();
     Categoria;
 
-    const body = sanitizeObject(await request.json());
+    const rawBody = await request.json();
+    const body = sanitizeObject(pickAllowedFields<any>(rawBody, ALLOWED_SUBCATEGORIA_FIELDS as unknown as string[]));
 
     if (body.categoria && !isValidObjectId(body.categoria)) {
       return errorResponse('ID de categoría inválido', 400);
@@ -53,21 +64,20 @@ export async function PUT(
 
     return successResponse(subcategoria, 'Subcategoría actualizada exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al actualizar subcategoría:', error);
     return handleMongoError(error);
   }
 }
 
-// DELETE: Eliminar subcategoría (requiere auth)
+// DELETE: Eliminar subcategoría (requiere rol admin)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    verifyAuth(request);
+    verifyAdmin(request);
     if (!isValidObjectId(params.id)) return errorResponse('ID inválido', 400);
     await connectDB();
 
@@ -76,9 +86,8 @@ export async function DELETE(
 
     return successResponse(null, 'Subcategoría eliminada exitosamente');
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return errorResponse(error.message, 401);
-    }
+    const authErrorResponse = handleAuthError(error);
+    if (authErrorResponse) return authErrorResponse;
     console.error('Error al eliminar subcategoría:', error);
     return errorResponse('Error al eliminar subcategoría', 500);
   }
