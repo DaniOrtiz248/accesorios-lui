@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { FiLogOut, FiPackage, FiTag, FiLayers, FiHome } from 'react-icons/fi';
+import { FiLogOut, FiPackage, FiTag, FiLayers, FiHome, FiSettings, FiExternalLink } from 'react-icons/fi';
 
 export default function AdminNavbar() {
   const { logout, usuario } = useAuth();
@@ -41,6 +41,21 @@ export default function AdminNavbar() {
             >
               <FiLayers />
               <span>Subcategorías</span>
+            </Link>
+            <Link
+              href="/admin/cuenta"
+              className="flex items-center space-x-2 hover:text-accent-light transition"
+            >
+              <FiSettings />
+              <span>Cuenta</span>
+            </Link>
+            <Link
+              href="/"
+              className="flex items-center space-x-1.5 text-sm text-primary-200 hover:text-accent-light transition"
+              title="Ver tienda"
+            >
+              <FiExternalLink />
+              <span>Ver tienda</span>
             </Link>
 
             <div className="flex items-center space-x-4 ml-6 pl-6 border-l border-primary-700">
@@ -90,6 +105,20 @@ export default function AdminNavbar() {
           >
             <FiLayers />
             <span>Subcategorías</span>
+          </Link>
+          <Link
+            href="/admin/cuenta"
+            className="flex items-center space-x-1 text-sm hover:text-accent-light transition"
+          >
+            <FiSettings />
+            <span>Cuenta</span>
+          </Link>
+          <Link
+            href="/"
+            className="flex items-center space-x-1 text-sm text-primary-200 hover:text-accent-light transition"
+          >
+            <FiExternalLink />
+            <span>Ver tienda</span>
           </Link>
         </div>
       </div>

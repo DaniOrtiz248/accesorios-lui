@@ -72,6 +72,14 @@ export default function Footer() {
 
         <div className="border-t border-primary-700 mt-8 pt-6 text-center text-primary-200">
           <p>&copy; {new Date().getFullYear()} Luisa Ramirez Accesorios. Todos los derechos reservados.</p>
+          <p className="mt-2">
+            <a
+              href="/admin/login"
+              className="text-xs text-primary-400 hover:text-primary-200 transition"
+            >
+              Administración
+            </a>
+          </p>
         </div>
       </div>
     </footer>
