@@ -1,12 +1,15 @@
+import mongoose from 'mongoose';
+import { saveWithImages, tryCleanupImages } from '@/lib/image-lifecycle';
+import { sanitizeImageBody } from '@/lib/image-validation';
 import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Categoria from '@/models/Categoria';
 import Producto from '@/models/Producto';
 import { verifyAdmin } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
-import { sanitizeObject, pickAllowedFields } from '@/lib/security';
+import { pickAllowedFields } from '@/lib/security';
 
-const ALLOWED_CATEGORIA_FIELDS = ['nombre', 'descripcion', 'imagen', 'activo'] as const;
+const ALLOWED_CATEGORIA_FIELDS = ['nombre', 'descripcion', 'imagen', 'imagenPublicId', 'activo'] as const;
 
 // GET: Obtener todas las categorías activas (público) o todas con conteo (solo admin)
 export async function GET(request: NextRequest) {
@@ -59,8 +62,9 @@ export async function POST(request: NextRequest) {
     await connectDB();
     
     const rawBody = await request.json();
-    const body = sanitizeObject(pickAllowedFields<any>(rawBody, ALLOWED_CATEGORIA_FIELDS as unknown as string[]));
-    const categoria = await Categoria.create(body);
+    const body = sanitizeImageBody(pickAllowedFields<any>(rawBody, ALLOWED_CATEGORIA_FIELDS as unknown as string[]));
+    const categoria = await saveWithImages('categoria', new mongoose.Types.ObjectId().toString(), body, 'create');
+    await tryCleanupImages();
     
     return successResponse(categoria, 'Categoría creada exitosamente');
   } catch (error: any) {

@@ -96,6 +96,7 @@ export default function ProductoDetallePage() {
                   src={imagenesValidas[currentIndex]}
                   alt={producto.nombre}
                   fill
+                  sizes="(min-width: 1536px) 728px, (min-width: 1280px) 600px, (min-width: 1024px) 472px, (min-width: 768px) 736px, (min-width: 640px) 608px, calc(100vw - 32px)"
                   className="object-cover transition-transform group-hover:scale-105"
                   priority
                 />
@@ -146,7 +147,7 @@ export default function ProductoDetallePage() {
                     currentImageIndex === index ? 'border-primary-600' : 'border-transparent'
                   }`}
                 >
-                  <Image src={img} alt={`${producto.nombre} ${index + 1}`} fill className="object-cover" />
+                  <Image src={img} alt={`${producto.nombre} ${index + 1}`} fill sizes="(min-width: 1536px) 140px, (min-width: 1280px) 114px, (min-width: 1024px) 88px, (min-width: 768px) 141px, (min-width: 640px) 116px, calc(20vw - 12.8px)" className="object-cover" />
                 </button>
               ))}
             </div>
@@ -250,6 +251,7 @@ export default function ProductoDetallePage() {
               src={imagenesValidas[currentIndex]}
               alt={producto.nombre}
               fill
+              sizes="(min-width: 1184px) 1152px, calc(100vw - 32px)"
               className="object-contain"
               priority
             />

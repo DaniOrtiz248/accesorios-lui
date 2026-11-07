@@ -398,6 +398,7 @@ export default function AdminProductosPage() {
                       src={producto.imagenes[0]}
                       alt={producto.nombre}
                       fill
+                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                       className="object-cover"
                     />
                   ) : (

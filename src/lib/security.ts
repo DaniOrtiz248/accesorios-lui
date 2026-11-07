@@ -3,7 +3,8 @@
  */
 
 /**
- * Sanitiza strings para prevenir inyección NoSQL y XSS
+ * Sanitiza texto comercial. No usar con URLs ni public IDs: esos campos se
+ * validan sin truncar en image-validation.ts.
  */
 export function sanitizeString(input: string): string {
   if (typeof input !== 'string') return '';

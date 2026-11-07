@@ -5,10 +5,9 @@ import Categoria from '@/models/Categoria';
 import Subcategoria from '@/models/Subcategoria';
 import { verifyAdmin } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
-import { deleteProductImage } from '@/lib/cloudinary';
-import { sanitizeObject, isValidObjectId, limitArrayLength, validateTextInput, sanitizeNumber, pickAllowedFields } from '@/lib/security';
-
-const MAX_IMAGENES = 10;
+import { saveWithImages, tryCleanupImages } from '@/lib/image-lifecycle';
+import { sanitizeImageBody } from '@/lib/image-validation';
+import { isValidObjectId, limitArrayLength, validateTextInput, sanitizeNumber, pickAllowedFields } from '@/lib/security';
 
 // Campos permitidos que un admin puede actualizar en un producto
 const ALLOWED_PRODUCTO_FIELDS = [
@@ -85,7 +84,7 @@ export async function PUT(
     let body = pickAllowedFields<any>(rawBody, ALLOWED_PRODUCTO_FIELDS as unknown as string[]);
     
     // Sanitizar datos de entrada
-    body = sanitizeObject(body);
+    body = sanitizeImageBody(body);
     
     // Validar campos requeridos
     if (body.nombre && !validateTextInput(body.nombre, 2, 100)) {
@@ -113,65 +112,17 @@ export async function PUT(
       );
     }
     
-    // Obtener producto actual para comparar imágenes
-    const productoActual = await Producto.findById(params.id);
-    
-    if (!productoActual) {
-      return errorResponse('Producto no encontrado', 404);
-    }
-    
-    // Limpiar y limitar array de imágenes (máximo 10, igual que el modelo y la UI)
-    if (body.imagenes && Array.isArray(body.imagenes)) {
-      body.imagenes = limitArrayLength(
-        body.imagenes.filter((img: any) => 
-          img && typeof img === 'string' && img.trim() !== '' && img.startsWith('http')
-        ),
-        MAX_IMAGENES
-      );
+    const producto = await saveWithImages('producto', params.id, body, 'update');
 
-      // Limpiar/alinear array de public_ids (si viene) con el mismo límite
-      if (body.imagenesPublicIds && Array.isArray(body.imagenesPublicIds)) {
-        body.imagenesPublicIds = limitArrayLength(
-          body.imagenesPublicIds.filter((id: any) => typeof id === 'string'),
-          MAX_IMAGENES
-        );
-      }
-      
-      // Identificar imágenes que se eliminaron
-      const imagenesActuales = productoActual.imagenes || [];
-      const publicIdsActuales = productoActual.imagenesPublicIds || [];
-      const imagenesNuevas = body.imagenes || [];
-      
-      const imagenesAEliminar: { url: string; publicId?: string }[] = [];
-      imagenesActuales.forEach((imgActual: string, index: number) => {
-        if (!imagenesNuevas.includes(imgActual)) {
-          imagenesAEliminar.push({ url: imgActual, publicId: publicIdsActuales[index] });
-        }
-      });
-      
-      // Eliminar imágenes viejas de Cloudinary (por public_id si está disponible)
-      if (imagenesAEliminar.length > 0) {
-        await Promise.all(
-          imagenesAEliminar.map(({ url, publicId }) => 
-            deleteProductImage(url, publicId).catch((err) => {
-              console.error('Error al eliminar imagen:', err);
-            })
-          )
-        );
-      }
-    }
-    
-    const producto = await Producto.findByIdAndUpdate(
-      params.id,
-      body,
-      { new: true, runValidators: true }
-    ).populate('categoria', 'nombre slug')
-     .populate('subcategorias', 'nombre');
-    
     if (!producto) {
       return errorResponse('Producto no encontrado', 404);
     }
     
+    await tryCleanupImages();
+    await producto.populate([
+      { path: 'categoria', select: 'nombre slug' },
+      { path: 'subcategorias', select: 'nombre' },
+    ]);
     return successResponse(producto, 'Producto actualizado exitosamente');
   } catch (error: any) {
     const authErrorResponse = handleAuthError(error);
@@ -198,24 +149,10 @@ export async function DELETE(
     // Force model registration for serverless cold starts
     Categoria; Subcategoria;
     
-    const producto = await Producto.findById(params.id);
-    
-    if (!producto) {
-      return errorResponse('Producto no encontrado', 404);
-    }
-    
-    // Eliminar imágenes de Cloudinary (por public_id si está disponible)
-    if (producto.imagenes && producto.imagenes.length > 0) {
-      const publicIds = producto.imagenesPublicIds || [];
-      await Promise.all(
-        producto.imagenes.map((url, index) =>
-          deleteProductImage(url, publicIds[index]).catch(console.error)
-        )
-      );
-    }
-    
-    await Producto.findByIdAndDelete(params.id);
-    
+    const producto = await saveWithImages('producto', params.id, {}, 'delete');
+    if (!producto) return errorResponse('Producto no encontrado', 404);
+    await tryCleanupImages();
+
     return successResponse(null, 'Producto eliminado exitosamente');
   } catch (error: any) {
     const authErrorResponse = handleAuthError(error);

@@ -1,3 +1,6 @@
+import mongoose from 'mongoose';
+import { saveWithImages, tryCleanupImages } from '@/lib/image-lifecycle';
+import { sanitizeImageBody } from '@/lib/image-validation';
 import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Producto from '@/models/Producto';
@@ -5,9 +8,7 @@ import Categoria from '@/models/Categoria';
 import Subcategoria from '@/models/Subcategoria';
 import { verifyAdmin } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
-import { sanitizeString, sanitizeNumber, isValidObjectId, limitArrayLength, pickAllowedFields, sanitizeObject } from '@/lib/security';
-
-const MAX_IMAGENES = 10;
+import { sanitizeString, sanitizeNumber, isValidObjectId, limitArrayLength, pickAllowedFields } from '@/lib/security';
 
 // Mapa de letra base -> variantes acentuadas frecuentes en español.
 // Se usa para que la búsqueda encuentre "Corazón" aunque el usuario escriba
@@ -192,24 +193,8 @@ export async function POST(request: NextRequest) {
 
     // Whitelist: sólo se aceptan campos previstos (previene mass assignment)
     let body = pickAllowedFields<any>(rawBody, ALLOWED_PRODUCTO_FIELDS as unknown as string[]);
-    body = sanitizeObject(body);
+    body = sanitizeImageBody(body);
     
-    // Limpiar array de imágenes: eliminar valores null, undefined o strings vacíos
-    if (body.imagenes && Array.isArray(body.imagenes)) {
-      body.imagenes = limitArrayLength(
-        body.imagenes.filter((img: any) => img && typeof img === 'string' && img.trim() !== ''),
-        MAX_IMAGENES
-      );
-    }
-
-    // Limpiar array de public_ids de Cloudinary (alineado con imagenes)
-    if (body.imagenesPublicIds && Array.isArray(body.imagenesPublicIds)) {
-      body.imagenesPublicIds = limitArrayLength(
-        body.imagenesPublicIds.filter((id: any) => id && typeof id === 'string'),
-        MAX_IMAGENES
-      );
-    }
-
     // Limpiar array de subcategorias
     if (body.subcategorias && Array.isArray(body.subcategorias)) {
       body.subcategorias = limitArrayLength(
@@ -218,7 +203,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const producto = await Producto.create(body);
+    const producto = await saveWithImages('producto', new mongoose.Types.ObjectId().toString(), body, 'create');
+    await tryCleanupImages();
     
     return successResponse(producto, 'Producto creado exitosamente');
   } catch (error: any) {

@@ -126,7 +126,7 @@ export default function ProductoFormPage() {
           ),
           categoria: producto.categoria?._id || producto.categoria,
           imagenes: producto.imagenes || [],
-          imagenesPublicIds: producto.imagenesPublicIds || [],
+          imagenesPublicIds: (producto.imagenes || []).map((_: string, index: number) => producto.imagenesPublicIds?.[index] || ''),
           activo: producto.activo,
         });
         if (producto.categoria?._id || producto.categoria) {
@@ -386,6 +386,7 @@ export default function ProductoFormPage() {
                         src={img}
                         alt={`Imagen ${index + 1}`}
                         fill
+                        sizes="(min-width: 640px) 144px, 33vw"
                         className="object-cover rounded-lg"
                       />
                       <span className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition flex items-center justify-center">

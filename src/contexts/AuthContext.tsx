@@ -40,6 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    if (!token) return;
+    // Recupera cargas abandonadas aunque la pestaña anterior no enviara unload.
+    // El servidor sólo retira pendientes de más de 24 horas y bajas confirmadas.
+    fetch('/api/upload/cleanup', {
+      method: 'POST', headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => console.error('La limpieza de imágenes se reintentará en la próxima sesión'));
+  }, [token]);
+
   const login = async (username: string, password: string) => {
     try {
       const res = await fetch('/api/auth/login', {

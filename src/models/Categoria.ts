@@ -4,6 +4,7 @@ export interface ICategoria extends Document {
   nombre: string;
   descripcion?: string;
   imagen?: string;
+  imagenPublicId?: string;
   slug: string;
   activo: boolean;
   createdAt: Date;
@@ -26,6 +27,7 @@ const CategoriaSchema: Schema = new Schema(
     imagen: {
       type: String,
     },
+    imagenPublicId: { type: String, default: '' },
     slug: {
       type: String,
       unique: true,

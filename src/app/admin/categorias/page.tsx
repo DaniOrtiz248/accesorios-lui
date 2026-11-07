@@ -12,6 +12,7 @@ interface Categoria {
   nombre: string;
   descripcion?: string;
   imagen?: string;
+  imagenPublicId?: string;
   slug: string;
   activo: boolean;
   productosCount?: number;
@@ -29,6 +30,7 @@ export default function AdminCategoriasPage() {
     nombre: '',
     descripcion: '',
     imagen: '',
+    imagenPublicId: '',
   });
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function AdminCategoriasPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setFormData((prev) => ({ ...prev, imagen: data.data.url }));
+        setFormData((prev) => ({ ...prev, imagen: data.data.url, imagenPublicId: data.data.publicId }));
       } else {
         alert(data.message || 'Error al subir imagen');
       }
@@ -101,7 +103,7 @@ export default function AdminCategoriasPage() {
       if (data.success) {
         setShowForm(false);
         setEditingId(null);
-        setFormData({ nombre: '', descripcion: '', imagen: '' });
+        setFormData({ nombre: '', descripcion: '', imagen: '', imagenPublicId: '' });
         fetchCategorias();
       } else {
         alert(data.message || 'Error al guardar categoría');
@@ -117,6 +119,7 @@ export default function AdminCategoriasPage() {
       nombre: categoria.nombre,
       descripcion: categoria.descripcion || '',
       imagen: categoria.imagen || '',
+      imagenPublicId: categoria.imagenPublicId || '',
     });
     setShowForm(true);
   };
@@ -147,7 +150,7 @@ export default function AdminCategoriasPage() {
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ nombre: '', descripcion: '', imagen: '' });
+    setFormData({ nombre: '', descripcion: '', imagen: '', imagenPublicId: '' });
   };
 
   if (!isAuthenticated) return null;
@@ -222,7 +225,7 @@ export default function AdminCategoriasPage() {
                     </label>
                     {formData.imagen && (
                       <div className="relative h-32 w-full rounded-lg overflow-hidden mb-2 bg-gray-100">
-                        <Image src={formData.imagen} alt="Vista previa" fill className="object-cover" />
+                        <Image src={formData.imagen} alt="Vista previa" fill sizes="(min-width: 480px) 400px, calc(100vw - 80px)" className="object-cover" />
                       </div>
                     )}
                     <label
@@ -282,7 +285,7 @@ export default function AdminCategoriasPage() {
                 >
                   {categoria.imagen && (
                     <div className="relative h-24 w-full rounded-lg overflow-hidden mb-4">
-                      <Image src={categoria.imagen} alt={categoria.nombre} fill className="object-cover" />
+                      <Image src={categoria.imagen} alt={categoria.nombre} fill sizes="(min-width: 1024px) 392px, (min-width: 768px) calc(50vw - 80px), calc(100vw - 112px)" className="object-cover" />
                     </div>
                   )}
                   <div className="flex items-start justify-between mb-2">

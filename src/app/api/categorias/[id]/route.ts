@@ -1,12 +1,14 @@
+import { saveWithImages, tryCleanupImages } from '@/lib/image-lifecycle';
+import { sanitizeImageBody } from '@/lib/image-validation';
 import { NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Categoria from '@/models/Categoria';
 import Producto from '@/models/Producto';
 import { verifyAdmin } from '@/lib/auth';
 import { successResponse, errorResponse, handleMongoError, handleAuthError } from '@/lib/api-utils';
-import { isValidObjectId, sanitizeObject, pickAllowedFields } from '@/lib/security';
+import { isValidObjectId, pickAllowedFields } from '@/lib/security';
 
-const ALLOWED_CATEGORIA_FIELDS = ['nombre', 'descripcion', 'imagen', 'activo'] as const;
+const ALLOWED_CATEGORIA_FIELDS = ['nombre', 'descripcion', 'imagen', 'imagenPublicId', 'activo'] as const;
 
 // GET: Obtener categoría por ID (público si está activa; inactiva sólo para admin)
 export async function GET(
@@ -54,18 +56,15 @@ export async function PUT(
     await connectDB();
     
     const rawBody = await request.json();
-    const body = sanitizeObject(pickAllowedFields<any>(rawBody, ALLOWED_CATEGORIA_FIELDS as unknown as string[]));
+    const body = sanitizeImageBody(pickAllowedFields<any>(rawBody, ALLOWED_CATEGORIA_FIELDS as unknown as string[]));
 
-    const categoria = await Categoria.findByIdAndUpdate(
-      params.id,
-      body,
-      { new: true, runValidators: true }
-    );
-    
+    const categoria = await saveWithImages('categoria', params.id, body, 'update');
+
     if (!categoria) {
       return errorResponse('Categoría no encontrada', 404);
     }
     
+    await tryCleanupImages();
     return successResponse(categoria, 'Categoría actualizada exitosamente');
   } catch (error: any) {
     const authErrorResponse = handleAuthError(error);
@@ -97,12 +96,13 @@ export async function DELETE(
       );
     }
     
-    const categoria = await Categoria.findByIdAndDelete(params.id);
+    const categoria = await saveWithImages('categoria', params.id, {}, 'delete');
     
     if (!categoria) {
       return errorResponse('Categoría no encontrada', 404);
     }
     
+    await tryCleanupImages();
     return successResponse(null, 'Categoría eliminada exitosamente');
   } catch (error: any) {
     const authErrorResponse = handleAuthError(error);

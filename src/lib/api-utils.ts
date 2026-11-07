@@ -40,6 +40,9 @@ export function handleAuthError(error: any) {
  * Maneja errores de MongoDB
  */
 export function handleMongoError(error: any) {
+  if (error?.name === 'ImageInputError') {
+    return errorResponse(error.message, 400);
+  }
   if (error.code === 11000) {
     const field = Object.keys(error.keyPattern)[0];
     return errorResponse(`Ya existe un registro con ese ${field}`, 409);

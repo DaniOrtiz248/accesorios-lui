@@ -26,7 +26,7 @@ export default function ProductCard({ producto }: ProductCardProps) {
               alt={producto.nombre}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(min-width: 1536px) 358px, (min-width: 1280px) 294px, (min-width: 1024px) 315px, (min-width: 768px) 356px, (min-width: 640px) 292px, calc(100vw - 32px)"
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">

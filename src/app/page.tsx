@@ -147,6 +147,7 @@ export default function Home() {
                           src={cat.imagen}
                           alt={cat.nombre}
                           fill
+                          sizes="141px"
                           className="object-cover transition-transform duration-300"
                         />
                       ) : (
